@@ -71,24 +71,25 @@ var lib = {
 	'<' : function(args) {
 		if(args.length > 2) { return 'NIL';} //kako ovo hendlati?
 		if(eval(args[0]) < eval(args[1])) {
-			return 'T';
+			return true;
 		} else {
-			return 'NIL';
+			return false;
 		}
 	},
 	'>' :function(args) {
 		if(args.length > 2) { return 'NIL';} //kako ovo hendlati?
 		if(eval(args[0]) > eval(args[1])) {
-			return 'T';
+			return true;
 		} else {
-			return 'NIL';
+			return false;
 		}
 	},
 	'lt' : function(args){ return this['<'](args);}, //ovako sinonime pisati
 }
 
 var applyArgs = function(simbols,vals,vars) {
-	console.log(vars);
+	// console.log(vars);
+	vars = JSON.parse(JSON.stringify(vars));    //odvratan hack, radi nad drugim varsima, ne onim iz definicije fje
 	var applySingle = function(simbol,val,vars) {
 		for(var i=0;i<vars.length;i++) {
 			if(vars[i]==simbol) vars[i]=val;
@@ -103,37 +104,47 @@ var applyArgs = function(simbols,vals,vars) {
 
 var specials = {
 	'defun' : function(args) {//ime fje (arg or multy) (body)
-		console.log(args);
 		var funcName = args[0];
 		var funcArgs = args[1];
 		var funcBody = args.slice(2);
 		var fun = function(args) {
 			var retVal = null;
-			console.log("CALL: "+funcName+", args: "+funcArgs+", body: "+funcBody);
 			//eval
 			for(var i=0; i<funcBody.length; i++) {
 				retVal = eval(applyArgs(funcArgs,args,funcBody[i]));
-				console.log("part "+funcBody[i]+" res: "+retVal);
-				console.log("----------------------");
+				console.log(retVal);
 			}
 			return retVal;
 		};
-		lib[funcName] = fun;var fun = function(args) {
-			var retVal = null;
-			console.log("CALL: "+funcName+", args: "+funcArgs+", body: "+funcBody);
-			//eval
-			for(var i=0; i<funcBody.length; i++) {
-				retVal = eval(applyArgs(funcArgs,args,funcBody[i]));
-				console.log("part "+funcBody[i]+" res: "+retVal);
-				console.log("----------------------");
-			}
-			return retVal;
-		};
+		lib[funcName] = fun;
+		// var fun = function(args) {
+		// 	var retVal = null;
+		// 	console.log("CALL: "+funcName+", args: "+funcArgs+", body: "+funcBody);
+		// 	//eval
+		// 	for(var i=0; i<funcBody.length; i++) {
+		// 		retVal = eval(applyArgs(funcArgs,args,funcBody[i]));-
+		// 		console.log("part "+funcBody[i]+" res: "+retVal);
+		// 		console.log("----------------------");
+		// 	}
+		// 	return retVal;
+		// };
 		return funcName;
 	},
 	'lambda' : function(args) {
 
-	}
+	},
+	'if' : function(args) {
+		if(args.length != 3 ) {
+			//raise error, wrong number of arguments
+			return false;
+		}
+		if(eval(args[0])) {
+			console.log('true '+args[1]);
+			return eval(args[1]);
+		} else {
+			return eval(args[2]);
+		}
+	},
 };
 var globals = {};
 var constants = {
@@ -143,6 +154,7 @@ var constants = {
 
 var eval = function(atom) {
 	//ako je array, onda je s-izraz inace atom
+	// console.log(atom);
 	if(atom instanceof Array) {
 		// console.log(atom+" je s-izraz");
 		var fja = atom[0];
@@ -151,13 +163,14 @@ var eval = function(atom) {
 		if(specials.hasOwnProperty(fja)) {
 			return specials[fja](args);//specialsi vracaju function obj
 		};
-		// console.log(lib[fja]+" fja");
 		// console.log(args+" args");
 		//postoji li fja, evalaj redom argse, prosljedi ih fji
 		var evaluatedArgs = new Array();
 		for (var i=0;i<args.length;i++) {
 			evaluatedArgs.push(eval(args[i]));
 		}
+
+
 		// console.log("evaled args "+evaluatedArgs);
 		return lib[fja](evaluatedArgs);
 
@@ -185,9 +198,6 @@ var eval = function(atom) {
 }
 
 
-// applyArgs("x",3,["x",2,[2,[1,"x"],"x"]]);
-
-
 var evaluateLine = function(line) {
 	var results = [];
 	var structure = createStructure(splitf(preSplit(line)));
@@ -201,7 +211,12 @@ var evaluateLine = function(line) {
 // evaluateLine(l);
 // console.log(createStructure(splitf(preSplit(l))));
 
+console.log(evaluateLine('(defun fact (x) (if (> x 1) (* (fact (- x 1)) x ) (+ 0 1))) (fact 12)'));
+// console.log(evaluateLine('(defun f (x) (if (> x 0) (f (- x 1)) 99 )  )   '));
+// console.log(evaluateLine(' (f 10)'));
 
+// console.log(evaluateLine('(defun f (x) (f (- x 1)))'));
+// console.log(evaluateLine('(f 10)'));
 
 module.exports = {
 	eval: evaluateLine,

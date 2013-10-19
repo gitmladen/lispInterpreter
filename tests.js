@@ -16,60 +16,77 @@ describe('Array', function(){
         4
       );
     });
-
     it('summ', function(){
+      assert.equal(
+        e('(- 10 1)'),
+        9
+      );
+    });
+
+    it('multi sum', function(){
       assert.equal(
         e('(+ 2 2 2 2 -3)'),
         5
       );
     });
 
-    it('summ', function(){
+    it('multi sum ', function(){
       assert.equal(
         e('(+ (* 2 100) (* 1 10))'),
         210
       );
     });
 
-    it('summ', function(){
+    it('multi sum mul', function(){
       assert.equal(
         e('(+ (* 2 100) (* 1 10))'),
         210
       );
     });
 
-    it('summ', function(){
-      assert.equal(
-        e('(+ (* 2 100) (* 1 10))'),
-        210
-      );
-    });
-
-    it('summ', function(){
+    it('defun single param', function(){
       var res = e('(defun testna (x) (+ x 2)) (testna 4)');
       assert.equal(res[0],'testna');
       assert.equal(res[1],6);
     });
 
-    it('summ', function(){
+    it('defun multy param', function(){
       var res = e('(defun testna (x y z g) (+ x y z g)) (testna 4 13 1 2)');
       assert.equal(res[0],'testna');
       assert.equal(res[1],20);
     });
 
-    it('summ', function(){
+    it('greater-tnan', function(){
       assert.equal(
-        e('(> 1 2)'),
-        'NIL'
+        e('(> 1 2)')[0],
+        false
       );
     });
-    it('summ', function(){
+    it('less-than', function(){
       assert.equal(
-        e('(< 1 2)'),
-        'T'
+        e('(< 1 2)')[0],
+        true
       );
     });
-
+    it('if-true', function(){
+      assert.equal(
+        e('(if (> 2 1) (+ 10 15) (+ 2 3) )'),
+        25
+      );
+    });
+    it('if-false', function(){
+      assert.equal(
+        e('(if (< 2 1) (+ 10 15) (+ 2 3) )'),
+        5
+      );
+    });
+    it('recursion-factorial', function(){
+      var res = e('(defun fact (x) (if (> x 1) (* (fact (- x 1)) x ) (+ 0 1))) (fact 12)');
+      assert.equal(
+        res[1],
+        479001600
+      );
+    });
 
   })
 })

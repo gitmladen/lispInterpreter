@@ -1,10 +1,9 @@
 // var kod = '(+ 2 (- 5 4) (* 1 (13 42) 2) )';
-var kod = '(defun square (x) (* x x))   (square 4)';
+// var kod = '(defun square (x) (* x x))   (square 4)';
 
-
-
-kod = kod.replace(/\(/g, ' ( ').replace(/\)/g,' ) ');
-console.log(kod);
+var preSplit = function(line) {
+	return line.replace(/\(/g, ' ( ').replace(/\)/g,' ) ');
+};
 
 var splitf = function(str) {
 	var ret = new Array();
@@ -68,7 +67,24 @@ var lib = {
 	},
 	'quote' : function(args) {
 
-	}
+	},
+	'<' : function(args) {
+		if(args.length > 2) { return 'NIL';} //kako ovo hendlati?
+		if(eval(args[0]) < eval(args[1])) {
+			return 'T';
+		} else {
+			return 'NIL';
+		}
+	},
+	'>' :function(args) {
+		if(args.length > 2) { return 'NIL';} //kako ovo hendlati?
+		if(eval(args[0]) > eval(args[1])) {
+			return 'T';
+		} else {
+			return 'NIL';
+		}
+	},
+	'lt' : function(args){ return this['<'](args);}, //ovako sinonime pisati
 }
 
 var applyArgs = function(simbols,vals,vars) {
@@ -102,7 +118,17 @@ var specials = {
 			}
 			return retVal;
 		};
-		lib[funcName] = fun;
+		lib[funcName] = fun;var fun = function(args) {
+			var retVal = null;
+			console.log("CALL: "+funcName+", args: "+funcArgs+", body: "+funcBody);
+			//eval
+			for(var i=0; i<funcBody.length; i++) {
+				retVal = eval(applyArgs(funcArgs,args,funcBody[i]));
+				console.log("part "+funcBody[i]+" res: "+retVal);
+				console.log("----------------------");
+			}
+			return retVal;
+		};
 		return funcName;
 	},
 	'lambda' : function(args) {
@@ -110,7 +136,10 @@ var specials = {
 	}
 };
 var globals = {};
-
+var constants = {
+	'T' : true,
+	'NIL' : false,
+};
 
 var eval = function(atom) {
 	//ako je array, onda je s-izraz inace atom
@@ -137,6 +166,9 @@ var eval = function(atom) {
 		if(isNaN(intTry)) {
 			//varijabla je je, pogledaj imenik
 			// console.log(atom+ " je varijabla");
+			if(constants.hasOwnProperty(atom)) {
+				return constants[atom];
+			}
 			if(globals.hasOwnProperty(atom)) {
 				//eval nad fjom (or, bolje fja prvo)
 				//eval pri definiciji varijable, il svaki put kad se iskoristi?
@@ -152,10 +184,26 @@ var eval = function(atom) {
 	}
 }
 
-// console.log(createStructure(splitf(kod)));
-
-var c = createStructure(splitf(kod));
-console.log(eval(c[0]));
-console.log(eval(c[1]));
 
 // applyArgs("x",3,["x",2,[2,[1,"x"],"x"]]);
+
+
+var evaluateLine = function(line) {
+	var results = [];
+	var structure = createStructure(splitf(preSplit(line)));
+	for(var g= 0; g<structure.length; g++) {
+		results.push(eval(structure[g]));
+	}
+	return results;
+};
+
+// var l = '(> 2 1)(< 2 1)(+ 2 1)(- 3 1)';
+// evaluateLine(l);
+// console.log(createStructure(splitf(preSplit(l))));
+
+
+
+module.exports = {
+	eval: evaluateLine,
+
+};

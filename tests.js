@@ -87,6 +87,37 @@ describe('Array', function(){
         479001600
       );
     });
+    it('recursion-fibonacci', function(){
+      var res = e('(defun fib (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))  (fib 14)');
+      assert.equal(
+        res[1],
+        377
+      );
+    });
+    it('quote-1', function(){
+      assert.deepEqual(e('(quote (2 3 5))'),[['2','3','5']]);
+    });
+    it('car', function(){
+      assert.equal(
+        e('(car (quote (2 (+ 4 5) 5)))'),
+        '2'
+      );
+    });
+    it('cdr', function(){
+      assert.deepEqual(e('(cdr (quote (2 4 5)))'),[['4','5']]);
+    });
+    it('list', function(){
+      assert.deepEqual(
+        e('(list 2 (+ 4 5) 5)')[0],
+        [2,9,5]
+      );
+    });
+    it('list cdr', function(){
+      assert.deepEqual(
+        e('(cdr (list 2 (+ 4 5) 5))')[0],
+        [9,5]
+      );
+    });
 
   })
 })

@@ -85,6 +85,21 @@ var lib = {
 		}
 	},
 	'lt' : function(args){ return this['<'](args);}, //ovako sinonime pisati
+
+	'car': function(args) {
+		//checkiraj broj argsa
+		return args[0][0];  //args[0] je lista, 0i clan nje
+	},
+	'cdr': function(args) {
+		return args[0].slice(1);
+	},
+	'list': function(args) {
+		ret = [];
+		for(var i=0; i<args.length; i++) {
+			ret.push(eval(args[i]));
+		}
+		return ret;
+	}	
 }
 
 var applyArgs = function(simbols,vals,vars) {
@@ -140,11 +155,20 @@ var specials = {
 		}
 		if(eval(args[0])) {
 			console.log('true '+args[1]);
+			console.log('true '+args[1]);
 			return eval(args[1]);
 		} else {
 			return eval(args[2]);
 		}
 	},
+	'quote': function(args) {
+		if(args.length != 1) {
+			//raise error, illegal number of arguments
+			console.log('hes dead jim! :/ too many damn arguments');
+			return;
+		}
+		return args[0];  //ne evaluatea nist, samo vrati
+	}
 };
 var globals = {};
 var constants = {
@@ -169,9 +193,6 @@ var eval = function(atom) {
 		for (var i=0;i<args.length;i++) {
 			evaluatedArgs.push(eval(args[i]));
 		}
-
-
-		// console.log("evaled args "+evaluatedArgs);
 		return lib[fja](evaluatedArgs);
 
 	} else {
@@ -207,16 +228,10 @@ var evaluateLine = function(line) {
 	return results;
 };
 
-// var l = '(> 2 1)(< 2 1)(+ 2 1)(- 3 1)';
-// evaluateLine(l);
-// console.log(createStructure(splitf(preSplit(l))));
+console.log(evaluateLine('(quote (2 3 5))'));
+// console.log(evaluateLine('(cdr (list 2 (+ 4 5) 5))'));
 
-console.log(evaluateLine('(defun fact (x) (if (> x 1) (* (fact (- x 1)) x ) (+ 0 1))) (fact 12)'));
-// console.log(evaluateLine('(defun f (x) (if (> x 0) (f (- x 1)) 99 )  )   '));
-// console.log(evaluateLine(' (f 10)'));
 
-// console.log(evaluateLine('(defun f (x) (f (- x 1)))'));
-// console.log(evaluateLine('(f 10)'));
 
 module.exports = {
 	eval: evaluateLine,

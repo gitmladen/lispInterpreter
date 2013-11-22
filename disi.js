@@ -1,27 +1,27 @@
 // var kod = '(+ 2 (- 5 4) (* 1 (13 42) 2) )';
 // var kod = '(defun square (x) (* x x))   (square 4)';
 
-var preSplit = function(line) {
-	return line.replace(/\(/g, ' ( ').replace(/\)/g,' ) ');
+var preSplit = function (line) {
+	return line.replace(/\(/g, ' ( ').replace(/\)/g, ' ) ');
 };
 
-var splitf = function(str) {
+var splitf = function (str) {
 	var ret = new Array();
 	var read = false;
 	var curr = "";
 	// var skip = false;
 	// var skipChar = "";
-	for(var i = 0 ; i < str.length; i++) {
+	for (var i = 0; i < str.length; i++) {
 		var c = str.charAt(i);
-		if(c==" ") {
-			if(read) {
+		if (c == " ") {
+			if (read) {
 				ret.push(curr);
 			}
-			curr="";
-			read=false;
+			curr = "";
+			read = false;
 		} else {
-			curr+=c;
-			if(!read) read=true;
+			curr += c;
+			if (!read) read = true;
 		}
 	}
 	return ret;
@@ -29,17 +29,18 @@ var splitf = function(str) {
 
 // s ( (d s ) ( ) ) ( ((das) sda)(dsad))
 
-var createStructure = function(tokens) {
+var createStructure = function (tokens) {
 	var ret = new Array();
-	for(var i = 0 ; i < tokens.length ; i++ ) {
-		if(tokens[i] == "(") {
-			ret.push(createStructure(tokens.slice(i+1)));
-			i++;var j=0; 
-			while(true) {//fastforward sramota
-				if(j==0 && tokens[i]==")") break;
-				if(tokens[i]=="("){
+	for (var i = 0; i < tokens.length; i++) {
+		if (tokens[i] == "(") {
+			ret.push(createStructure(tokens.slice(i + 1)));
+			i++;
+			var j = 0;
+			while (true) { //fastforward sramota
+				if (j == 0 && tokens[i] == ")") break;
+				if (tokens[i] == "(") {
 					j++;
-				}else if(tokens[i]==")"){
+				} else if (tokens[i] == ")") {
 					j--;
 				}
 				i++;
@@ -56,77 +57,100 @@ var createStructure = function(tokens) {
 }
 
 var lib = {
-	'+' : function(args) {
-		var res = 0; for(var i=0;i<args.length;i++) {res+=args[i];} return res;
+	'+': function (args) {
+		var res = 0;
+		for (var i = 0; i < args.length; i++) {
+			res += args[i];
+		}
+		return res;
 	},
-	'-' : function(args) {
-		var res = args.length>1 ? args[0] : 0; for(var i=args.length>1 ? 1 : 0; i<args.length;i++) {res-=args[i];} return res; //ako je jedan onda 0-prvi, inace prvi-ostali
+	'-': function (args) {
+		var res = args.length > 1 ? args[0] : 0;
+		for (var i = args.length > 1 ? 1 : 0; i < args.length; i++) {
+			res -= args[i];
+		}
+		return res; //ako je jedan onda 0-prvi, inace prvi-ostali
 	},
-	'*' : function(args) {
-		var res = 1; for(var i=0;i<args.length;i++) {res*=args[i];} return res;
+	'*': function (args) {
+		var res = 1;
+		for (var i = 0; i < args.length; i++) {
+			res *= args[i];
+		}
+		return res;
 	},
-	'quote' : function(args) {
+	'quote': function (args) {
 
 	},
-	'<' : function(args) {
-		if(args.length > 2) { return 'NIL';} //kako ovo hendlati?
-		if(eval(args[0]) < eval(args[1])) {
+	'<': function (args) {
+		if (args.length > 2) {
+			return 'NIL';
+		} //kako ovo hendlati?
+		if (eval(args[0]) < eval(args[1])) {
 			return true;
 		} else {
 			return false;
 		}
 	},
-	'>' :function(args) {
-		if(args.length > 2) { return 'NIL';} //kako ovo hendlati?
-		if(eval(args[0]) > eval(args[1])) {
+	'>': function (args) {
+		if (args.length > 2) {
+			return 'NIL';
+		} //kako ovo hendlati?
+		if (eval(args[0]) > eval(args[1])) {
 			return true;
 		} else {
 			return false;
 		}
 	},
-	'lt' : function(args){ return this['<'](args);}, //ovako sinonime pisati
+	'lt': function (args) {
+		return this['<'](args);
+	}, //ovako sinonime pisati
 
-	'car': function(args) {
+	'car': function (args) {
 		//checkiraj broj argsa
-		return args[0][0];  //args[0] je lista, 0i clan nje
+		return args[0][0]; //args[0] je lista, 0i clan nje
 	},
-	'cdr': function(args) {
+	'cdr': function (args) {
 		return args[0].slice(1);
 	},
-	'list': function(args) {
+	'list': function (args) {
 		ret = [];
-		for(var i=0; i<args.length; i++) {
+		for (var i = 0; i < args.length; i++) {
 			ret.push(eval(args[i]));
 		}
 		return ret;
-	}	
+	}
 }
 
-var applyArgs = function(simbols,vals,vars) {
+
+//sve zamijeniti pametni scopanjem
+//svaki poziv ima na stacku svoj scope u njemu se mapiraju actu na formal,
+//lokalno bindane su takodjer tu
+//globalni stack
+var bindArgs = function (formalParams, actualParams, vars) {
 	// console.log(vars);
-	vars = JSON.parse(JSON.stringify(vars));    //odvratan hack, radi nad drugim varsima, ne onim iz definicije fje
-	var applySingle = function(simbol,val,vars) {
-		for(var i=0;i<vars.length;i++) {
-			if(vars[i]==simbol) vars[i]=val;
-			if(vars[i] instanceof Array) applySingle(simbol,val,vars[i]);
+	vars = JSON.parse(JSON.stringify(vars)); //odvratan hack, radi nad drugim varsima, ne onim iz definicije fje
+	var bindSingle = function (formalParam, actualParam, vars) {
+		for (var i = 0; i < vars.length; i++) {
+			if (vars[i] == formalParam) vars[i] = actualParam;
+			if (vars[i] instanceof Array) bindSingle(formalParam, actualParam, vars[i]);
 		}
 	};
-	for(var j=0;j<simbols.length;j++) {
-		applySingle(simbols[j],vals[j],vars);
+	for (var j = 0; j < formalParams.length; j++) {
+		bindSingle(formalParams[j], actualParams[j], vars);
 	}
 	return vars;
 };
 
 var specials = {
-	'defun' : function(args) {//ime fje (arg or multy) (body)
+	'defun': function (args) { //ime fje (arg or multy) (body) (body2) (body3)
 		var funcName = args[0];
-		var funcArgs = args[1];
+		var params = args[1];
 		var funcBody = args.slice(2);
-		var fun = function(args) {
+		var fun = function (args) {
 			var retVal = null;
 			//eval
-			for(var i=0; i<funcBody.length; i++) {
-				retVal = eval(applyArgs(funcArgs,args,funcBody[i]));
+			for (var i = 0; i < funcBody.length; i++) { //vise clanova bodya, zadnji vr
+				retVal = eval(bindArgs(params, args, funcBody[i]));
 				console.log(retVal);
 			}
 			return retVal;
@@ -134,10 +158,10 @@ var specials = {
 		lib[funcName] = fun;
 		// var fun = function(args) {
 		// 	var retVal = null;
-		// 	console.log("CALL: "+funcName+", args: "+funcArgs+", body: "+funcBody);
+		// 	console.log("CALL: "+funcName+", args: "+params+", body: "+funcBody);
 		// 	//eval
 		// 	for(var i=0; i<funcBody.length; i++) {
-		// 		retVal = eval(applyArgs(funcArgs,args,funcBody[i]));-
+		// 		retVal = eval(bindArgs(params,args,funcBody[i]));-
 		// 		console.log("part "+funcBody[i]+" res: "+retVal);
 		// 		console.log("----------------------");
 		// 	}
@@ -145,65 +169,67 @@ var specials = {
 		// };
 		return funcName;
 	},
-	'lambda' : function(args) {
+	'lambda': function (args) {
 
 	},
-	'if' : function(args) {
-		if(args.length != 3 ) {
+	'if': function (args) {
+		if (args.length != 3) {
 			//raise error, wrong number of arguments
 			return false;
 		}
-		if(eval(args[0])) {
-			console.log('true '+args[1]);
-			console.log('true '+args[1]);
+		if (eval(args[0])) {
+			console.log('true ' + args[1]);
+			console.log('true ' + args[1]);
 			return eval(args[1]);
 		} else {
 			return eval(args[2]);
 		}
 	},
-	'quote': function(args) {
-		if(args.length != 1) {
+	'quote': function (args) {
+		if (args.length != 1) {
 			//raise error, illegal number of arguments
 			console.log('hes dead jim! :/ too many damn arguments');
 			return;
 		}
-		return args[0];  //ne evaluatea nist, samo vrati
+		return args[0]; //ne evaluatea nist, samo vrati
 	}
 };
+
 var globals = {};
+
 var constants = {
-	'T' : true,
-	'NIL' : false,
+	'T': true,
+	'NIL': false,
 };
 
-var eval = function(atom) {
+var eval = function (atom) {
 	//ako je array, onda je s-izraz inace atom
 	// console.log(atom);
-	if(atom instanceof Array) {
+	if (atom instanceof Array) {
 		// console.log(atom+" je s-izraz");
 		var fja = atom[0];
 		var args = atom.slice(1);
 		//check if special..
-		if(specials.hasOwnProperty(fja)) {
-			return specials[fja](args);//specialsi vracaju function obj
+		if (specials.hasOwnProperty(fja)) {
+			return specials[fja](args); //specialsi vracaju function obj
 		};
 		// console.log(args+" args");
 		//postoji li fja, evalaj redom argse, prosljedi ih fji
 		var evaluatedArgs = new Array();
-		for (var i=0;i<args.length;i++) {
+		for (var i = 0; i < args.length; i++) {
 			evaluatedArgs.push(eval(args[i]));
 		}
-		return lib[fja](evaluatedArgs);
+		return lib[fja](evaluatedArgs); //fja treba raditi? optimizacija kod OR-a npr...
 
 	} else {
 		var intTry = parseInt(atom); // probaj i double
-		if(isNaN(intTry)) {
+		if (isNaN(intTry)) {
 			//varijabla je je, pogledaj imenik
 			// console.log(atom+ " je varijabla");
-			if(constants.hasOwnProperty(atom)) {
+			if (constants.hasOwnProperty(atom)) {
 				return constants[atom];
 			}
-			if(globals.hasOwnProperty(atom)) {
+			if (globals.hasOwnProperty(atom)) {
 				//eval nad fjom (or, bolje fja prvo)
 				//eval pri definiciji varijable, il svaki put kad se iskoristi?
 				return globals[atom];
@@ -219,18 +245,17 @@ var eval = function(atom) {
 }
 
 
-var evaluateLine = function(line) {
+var evaluateLine = function (line) {
 	var results = [];
 	var structure = createStructure(splitf(preSplit(line)));
-	for(var g= 0; g<structure.length; g++) {
+	for (var g = 0; g < structure.length; g++) {
 		results.push(eval(structure[g]));
 	}
 	return results;
 };
 
-console.log(evaluateLine('(quote (2 3 5))'));
+console.log(evaluateLine('(defun a () d) (a 21 1)'));
 // console.log(evaluateLine('(cdr (list 2 (+ 4 5) 5))'));
-
 
 
 module.exports = {

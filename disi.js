@@ -84,7 +84,7 @@ var lib = {
 	'<': function (args) {
 		if (args.length > 2) {
 			return 'NIL';
-		} //kako ovo hendlati?
+		} //kako ovo hendlati?//pa valjda se ocekuje da je evalano vec?!
 		if (eval(args[0]) < eval(args[1])) {
 			return true;
 		} else {
@@ -94,7 +94,7 @@ var lib = {
 	'>': function (args) {
 		if (args.length > 2) {
 			return 'NIL';
-		} //kako ovo hendlati?
+		} //kako ovo hendlati?  //isto tako valjda je evalano
 		if (eval(args[0]) > eval(args[1])) {
 			return true;
 		} else {
@@ -122,120 +122,126 @@ var lib = {
 }
 
 
-//sve zamijeniti pametni scopanjem
-//svaki poziv ima na stacku svoj scope u njemu se mapiraju actu na formal,
-//lokalno bindane su takodjer tu
-//globalni stack
-var bindArgs = function (formalParams, actualParams, vars) {
-	// console.log(vars);
-	vars = JSON.parse(JSON.stringify(vars)); //odvratan hack, radi nad drugim varsima, ne onim iz definicije fje
-	var bindSingle = function (formalParam, actualParam, vars) {
-		for (var i = 0; i < vars.length; i++) {
-			if (vars[i] == formalParam) vars[i] = actualParam;
-			if (vars[i] instanceof Array) bindSingle(formalParam, actualParam, vars[i]);
-		}
-	};
-	for (var j = 0; j < formalParams.length; j++) {
-		bindSingle(formalParams[j], actualParams[j], vars);
+//binds formal to actual params creating new closure with the calling one as parent and still accessible if not hidden by the new binding
+var bind = function (formal, actual, parentScope) {
+	var closure = {};
+	for (var i = 0; i < formal.length; i++) {
+		closure[formal[i]] = actual[i];
 	}
-	return vars;
+	closure.__proto__ = parentScope;
+	return closure;
 };
 
 var specials = {
-	'defun': function (args) { //ime fje (arg or multy) (body) (body2) (body3)
+	'defun': function (args, definitionScope) { //ime fje (arg or multy) (body) (body2) (body3)
 		var funcName = args[0];
 		var params = args[1];
 		var funcBody = args.slice(2);
-		var fun = function (args) {
+		var fun = function (args, callingScope) {
 			var retVal = null;
 			//eval
-			for (var i = 0; i < funcBody.length; i++) { //vise clanova bodya, zadnji vr
-				retVal = eval(bindArgs(params, args, funcBody[i]));
+			for (var i = 0; i < funcBody.length; i++) {
+				retVal = eval(funcBody[i], bind(params, args, callingScope)); //izostavljen scope u kojem je fja definirana
 				console.log(retVal);
 			}
+
 			return retVal;
 		};
+
 		lib[funcName] = fun;
-		// var fun = function(args) {
-		// 	var retVal = null;
-		// 	console.log("CALL: "+funcName+", args: "+params+", body: "+funcBody);
-		// 	//eval
-		// 	for(var i=0; i<funcBody.length; i++) {
-		// 		retVal = eval(bindArgs(params,args,funcBody[i]));-
-		// 		console.log("part "+funcBody[i]+" res: "+retVal);
-		// 		console.log("----------------------");
-		// 	}
-		// 	return retVal;
-		// };
 		return funcName;
 	},
 	'lambda': function (args) {
 
 	},
-	'if': function (args) {
+	'if': function (args, scope) {
 		if (args.length != 3) {
 			//raise error, wrong number of arguments
 			return false;
 		}
-		if (eval(args[0])) {
-			console.log('true ' + args[1]);
-			console.log('true ' + args[1]);
-			return eval(args[1]);
+		if (eval(args[0], scope)) {
+			// console.log('true ' + args[1]);
+			// console.log('true ' + args[1]);
+			return eval(args[1], scope);
 		} else {
-			return eval(args[2]);
+			return eval(args[2], scope);
 		}
 	},
 	'quote': function (args) {
 		if (args.length != 1) {
 			//raise error, illegal number of arguments
-			console.log('hes dead jim! :/ too many damn arguments');
+			throw 'hes dead jim! :/ too many damn arguments';
 			return;
 		}
 		return args[0]; //ne evaluatea nist, samo vrati
+	},
+	'let': function (args, scope) {
+		var bindings = args[0];
+		var bodies = args.slice(1);
+
+		var innerScope = {};
+
+		for (var i = 0; i < bindings.length; i++) {
+			var symbol = bindings[i][0];
+			var val = eval(bindings[i][1], scope);
+			innerScope[symbol] = val;
+		}
+		// console.log('calced closure ');
+		// console.log(innerScope);
+		// console.log('function ' + bodies);
+		// console.log('outer ');
+		// console.log(scope);
+		innerScope.__proto__ = scope;
+		var res = 0;
+		for (var i = 0; i < bodies.length; i++) {
+			res = eval(bodies[i], innerScope);
+		}
+
+		return res;
+	},
+	'setq': function (args, scope) {
+		var val;
+		var symbol;
+		for (var i = 0; i < args.length; i += 2) {
+			symbol = args[i];
+			val = eval(args[i + 1], scope);
+			globalScope[symbol] = val;
+		}
+		return val;
 	}
+
 };
 
-var globals = {};
-
-var constants = {
+var globalScope = {
 	'T': true,
 	'NIL': false,
 };
 
-var eval = function (atom) {
+
+var eval = function (atom, scope) {
 	//ako je array, onda je s-izraz inace atom
 	// console.log(atom);
 	if (atom instanceof Array) {
-		// console.log(atom+" je s-izraz");
+		// console.log(atom + " je s-izraz " + scope);
 		var fja = atom[0];
 		var args = atom.slice(1);
 		//check if special..
 		if (specials.hasOwnProperty(fja)) {
-			return specials[fja](args); //specialsi vracaju function obj
+			return specials[fja](args, scope); //specialsi vracaju function obj
 		};
 		// console.log(args+" args");
 		//postoji li fja, evalaj redom argse, prosljedi ih fji
 		var evaluatedArgs = new Array();
 		for (var i = 0; i < args.length; i++) {
-			evaluatedArgs.push(eval(args[i]));
+			evaluatedArgs.push(eval(args[i], scope));
 		}
-		return lib[fja](evaluatedArgs); //fja treba raditi? optimizacija kod OR-a npr...
+		// console.log(fja + '   args: ' + evaluatedArgs + '  ' + scope);
+		return lib[fja](evaluatedArgs, scope); //fja treba raditi? optimizacija kod OR-a npr...
 
 	} else {
 		var intTry = parseInt(atom); // probaj i double
 		if (isNaN(intTry)) {
-			//varijabla je je, pogledaj imenik
-			// console.log(atom+ " je varijabla");
-			if (constants.hasOwnProperty(atom)) {
-				return constants[atom];
-			}
-			if (globals.hasOwnProperty(atom)) {
-				//eval nad fjom (or, bolje fja prvo)
-				//eval pri definiciji varijable, il svaki put kad se iskoristi?
-				return globals[atom];
-			} else {
-				// console.log("variable "+atom+"is not defined!");
-			}
+			return scope[atom];
 		} else {
 			//broj je
 			// console.log(atom+" je broj");
@@ -249,13 +255,13 @@ var evaluateLine = function (line) {
 	var results = [];
 	var structure = createStructure(splitf(preSplit(line)));
 	for (var g = 0; g < structure.length; g++) {
-		results.push(eval(structure[g]));
+		results.push(eval(structure[g], globalScope));
 	}
 	return results;
 };
 
-console.log(evaluateLine('(defun a () d) (a 21 1)'));
-// console.log(evaluateLine('(cdr (list 2 (+ 4 5) 5))'));
+// console.log(evaluateLine('(defun fact (x) (if (> x 1) (* (fact (- x 1)) x ) (+ 0 1))) (fact 5)'));
+console.log(evaluateLine('(setq x 1 y 2)  (+ x y )'));
 
 
 module.exports = {

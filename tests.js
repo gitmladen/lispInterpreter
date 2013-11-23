@@ -6,123 +6,174 @@ var interpreter = require('./disi.js');
 
 
 
-describe('Array', function(){
-  describe('#indexOf()', function(){
+describe('Array', function () {
+  describe('#indexOf()', function () {
     var e = interpreter.eval;
 
-    it('summ', function(){
+    it('summ', function () {
       assert.equal(
         e('(+ 2 2)'),
         4
       );
     });
-    it('summ', function(){
+    it('summ', function () {
       assert.equal(
         e('(- 10 1)'),
         9
       );
     });
 
-    it('multi sum', function(){
+    it('multi sum', function () {
       assert.equal(
         e('(+ 2 2 2 2 -3)'),
         5
       );
     });
 
-    it('multi sum ', function(){
+    it('multi sum ', function () {
       assert.equal(
         e('(+ (* 2 100) (* 1 10))'),
         210
       );
     });
 
-    it('multi sum mul', function(){
+    it('multi sum mul', function () {
       assert.equal(
         e('(+ (* 2 100) (* 1 10))'),
         210
       );
     });
 
-    it('defun single param', function(){
+    it('defun single param', function () {
       var res = e('(defun testna (x) (+ x 2)) (testna 4)');
-      assert.equal(res[0],'testna');
-      assert.equal(res[1],6);
+      assert.equal(res[0], 'testna');
+      assert.equal(res[1], 6);
     });
 
-    it('defun multy param', function(){
+    it('defun multy param', function () {
       var res = e('(defun testna (x y z g) (+ x y z g)) (testna 4 13 1 2)');
-      assert.equal(res[0],'testna');
-      assert.equal(res[1],20);
+      assert.equal(res[0], 'testna');
+      assert.equal(res[1], 20);
     });
 
-    it('greater-tnan', function(){
+    it('greater-tnan', function () {
       assert.equal(
         e('(> 1 2)')[0],
         false
       );
     });
-    it('less-than', function(){
+    it('less-than', function () {
       assert.equal(
         e('(< 1 2)')[0],
         true
       );
     });
-    it('if-true', function(){
+    it('if-true', function () {
       assert.equal(
         e('(if (> 2 1) (+ 10 15) (+ 2 3) )'),
         25
       );
     });
-    it('if-false', function(){
+    it('if-false', function () {
       assert.equal(
         e('(if (< 2 1) (+ 10 15) (+ 2 3) )'),
         5
       );
     });
-    it('recursion-factorial', function(){
+    it('recursion-factorial', function () {
       var res = e('(defun fact (x) (if (> x 1) (* (fact (- x 1)) x ) (+ 0 1))) (fact 12)');
       assert.equal(
         res[1],
         479001600
       );
     });
-    it('recursion-fibonacci', function(){
+    it('recursion-fibonacci', function () {
       var res = e('(defun fib (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))  (fib 14)');
       assert.equal(
         res[1],
         377
       );
     });
-    it('quote-1', function(){
-      assert.deepEqual(e('(quote (2 3 5))'),[['2','3','5']]);
+    it('quote-1', function () {
+      assert.deepEqual(e('(quote (2 3 5))'), [
+        ['2', '3', '5']
+      ]);
     });
-    it('car', function(){
+    it('car', function () {
       assert.equal(
         e('(car (quote (2 (+ 4 5) 5)))'),
         '2'
       );
     });
-    it('cdr', function(){
-      assert.deepEqual(e('(cdr (quote (2 4 5)))'),[['4','5']]);
+    it('cdr', function () {
+      assert.deepEqual(e('(cdr (quote (2 4 5)))'), [
+        ['4', '5']
+      ]);
     });
-    it('list', function(){
+    it('list', function () {
       assert.deepEqual(
-        e('(list 2 (+ 4 5) 5)')[0],
-        [2,9,5]
+        e('(list 2 (+ 4 5) 5)')[0], [2, 9, 5]
       );
     });
-    it('list cdr', function(){
+    it('list cdr', function () {
       assert.deepEqual(
-        e('(cdr (list 2 (+ 4 5) 5))')[0],
-        [9,5]
+        e('(cdr (list 2 (+ 4 5) 5))')[0], [9, 5]
       );
     });
+    it('primitive-let-multi-variables-multi-body', function () {
+      assert.equal(
+        e('(let ((a 1)(b 2)(c 3)) (+ a b) (+ a b c) )'),
+        6
+      );
+    });
+    it('let-multi-complex-variables', function () {
+      assert.equal(
+        e('(let ((a (+ (* 1 2) 4 (+ 1 2))) (b (+ 2 (+ 3 1)))) (+ a b) )'),
+        15
+      );
+    });
+    it('let-&-defun-let-formal-parameters-clash', function () {
+      assert.equal(
+        e('( let ((x 1)) (defun f (x) (+ x 1) ) ) (f 43)')[1],
+        44
+      );
+    });
+    it('let-fun-definition-scope', function () {
+      assert.equal(
+        e('(let ((a 5)) (+ a (+ 1 (+ 1 a))) )'),
+        12
+      );
+    });
+    it('let-nested-covering', function () {
+      assert.equal(
+        e('(let ((a 5)) (let ((a 2))  (+ 0 2) ) )'),
+        2
+      );
+    });
+    it('let-nested-covering-mixed', function () {
+      assert.equal(
+        e('(let ((a 5)) (+ (let ((a 2))  (+ 0 2) ) a) )'),
+        7
+      );
+    });
+    it('let-fun-definition-scope', function () {
+      assert.equal(
+        e('( let ((y 5)) (defun f (x) (+ x 1 y) ) ) (f 43)')[1],
+        49
+      );
+    });
+
+
+    it('setq-basic', function () {
+      assert.equal(
+        e('(setq x 1 y 2)  (+ x y )')[1],
+        3
+      );
+    });
+
 
   })
 })
-
-
 
 
 

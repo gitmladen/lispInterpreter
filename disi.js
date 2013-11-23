@@ -139,7 +139,7 @@ var specials = {
 		var funcBody = args.slice(2);
 		var fun = function (args, callingScope) {
 			var retVal = null;
-			//eval
+			//calling scope na atributima glavni, definition scope za lokalne varijable ne moze biti pregazen nikako, cak ni definiranjem ponovo u callingscopeu
 			for (var i = 0; i < funcBody.length; i++) {
 				retVal = eval(funcBody[i], bind(params, args, callingScope)); //izostavljen scope u kojem je fja definirana
 				console.log(retVal);
@@ -151,7 +151,11 @@ var specials = {
 		lib[funcName] = fun;
 		return funcName;
 	},
-	'lambda': function (args) {
+	'lambda': function (params, body, args, scope) {
+		for (var i = 0; i < args.length; i++) {
+			args[i] = eval(args[i], scope);
+		}
+		return eval(body, bind(params, args, scope));
 
 	},
 	'if': function (args, scope) {
@@ -225,6 +229,16 @@ var eval = function (atom, scope) {
 		// console.log(atom + " je s-izraz " + scope);
 		var fja = atom[0];
 		var args = atom.slice(1);
+		if (fja instanceof Array) {
+			if (fja[0].toLowerCase() == 'lambda') {
+				var lParams = fja[1];
+				var lBody = fja[2];
+				return specials.lambda(lParams, lBody, args, scope);
+
+			} else {
+				throw 'lambda err'
+			}
+		}
 		//check if special..
 		if (specials.hasOwnProperty(fja)) {
 			return specials[fja](args, scope); //specialsi vracaju function obj
@@ -261,8 +275,7 @@ var evaluateLine = function (line) {
 };
 
 // console.log(evaluateLine('(defun fact (x) (if (> x 1) (* (fact (- x 1)) x ) (+ 0 1))) (fact 5)'));
-console.log(evaluateLine('(setq x 1 y 2)  (+ x y )'));
-
+console.log(evaluateLine('( (lambda (x) (+ x 1)) 4 )'));
 
 module.exports = {
 	eval: evaluateLine,

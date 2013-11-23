@@ -172,6 +172,14 @@ describe('Array', function () {
     });
 
 
+    it('lambda-basic', function () {
+      assert.equal(
+        e('( (lambda (x) (+ x 1)) 4 )'),
+        5
+      );
+    });
+
+
   })
 })
 

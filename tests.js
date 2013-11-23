@@ -179,6 +179,39 @@ describe('Array', function () {
       );
     });
 
+    it('struct-definition', function () {
+      assert.equal(
+        e('(defstruct structure a b c d )'),
+        'structure'
+      );
+    })
+
+    it('struct-instantiation-providing-all-args', function () {
+      assert.equal(
+        e('(defstruct structure a b)   (make-structure a 1 b 2)')[1]['a'],
+        1
+      );
+    })
+
+    it('struct-instantiation-partial', function () {
+      assert.equal(
+        e('(defstruct structure a b c d )  (make-structure a 1 b 2)')[1]['d'],
+        null
+      );
+    })
+
+    it('struct-accessors', function () {
+      assert.equal(
+        e('(defstruct structure a b c d ) (structure-b (make-structure a 1 b 2) )')[1],
+        2
+      );
+    })
+    it('struct-storing-instances-accessor-on-variable', function () {
+      assert.equal(
+        e('( defstruct st a b c  )  ( setq disi (make-st a 1 b 2)  )   (st-b disi)')[2],
+        2
+      );
+    })
 
   })
 })

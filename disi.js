@@ -4,8 +4,8 @@
 var preSplit = function (line) {
 	return line.replace(/\(/g, ' ( ').replace(/\)/g, ' ) ');
 };
-
-var splitf = function (str) {
+//lexer
+var scan = function (str) {
 	var ret = new Array();
 	var read = false;
 	var curr = "";
@@ -24,16 +24,18 @@ var splitf = function (str) {
 			if (!read) read = true;
 		}
 	}
+	console.log('Lexical stage: ');
+	console.log(ret);
 	return ret;
 }
 
 // s ( (d s ) ( ) ) ( ((das) sda)(dsad))
-
-var createStructure = function (tokens) {
+//parser, syntax analysis
+var parse = function (tokens) {
 	var ret = new Array();
 	for (var i = 0; i < tokens.length; i++) {
 		if (tokens[i] == "(") {
-			ret.push(createStructure(tokens.slice(i + 1)));
+			ret.push(parse(tokens.slice(i + 1)));
 			i++;
 			var j = 0;
 			while (true) { //fastforward sramota
@@ -53,6 +55,8 @@ var createStructure = function (tokens) {
 		// console.log(ret);
 
 	}
+	console.log('Syntactical stage: ');
+	console.log(ret);
 	return ret;
 }
 
@@ -212,6 +216,62 @@ var specials = {
 			globalScope[symbol] = val;
 		}
 		return val;
+	},
+	'defstruct': function (args, scope) {
+		//strukture su immutable
+		//generira strukturu
+		//u fje doda za svaki atribut structa    imestructa-atribut fju
+		//(defstruct ime atr1 atr2 atr3...)
+		var name = args[0];
+		var attributes = args.slice(1);
+		var struct = {}; //definition
+		struct.attributes = {};
+		struct.name = name;
+		struct.accessors = [];
+		struct.setters = [];
+
+		attributes.forEach(function (attr) {
+			struct.attributes[attr] = null;
+		});
+
+		console.log('defined: ' + name);
+		console.log(struct);
+
+		var constructorName = 'make-' + name;
+		var constructor = function (consArgs, callingScope) { //argsi pocinju s :
+			var instance = {};
+			for (var definedAttr in struct.attributes) {
+				if (struct.attributes.hasOwnProperty(definedAttr)) {
+					instance[definedAttr] = null;
+				}
+			}
+			console.log(instance);
+			for (var i = 0; i < consArgs.length; i += 2) {
+				console.log(consArgs[i] + '   ' + consArgs[i + 1]);
+				instance[consArgs[i]] = consArgs[i + 1];
+			}
+
+			console.log('constructed: ');
+			console.log(instance);
+			return instance;
+		}
+
+		attributes.forEach(function (attr) {
+			var accessorName = name + '-' + attr;
+
+			console.log('creating accessor ' + accessorName);
+			var accessor = function (args) {
+				var instance = args[0];
+				return instance[attr];
+			}
+			struct.accessors.push(accessor);
+			lib[accessorName] = accessor;
+		});
+
+
+		specials[constructorName] = constructor; //konstruktori specialsi jer oni ne evalaju argumente, vratiti na fje kad se doda :arg 
+		return name;
+
 	}
 
 };
@@ -219,6 +279,9 @@ var specials = {
 var globalScope = {
 	'T': true,
 	'NIL': false,
+};
+var structures = {
+
 };
 
 
@@ -252,6 +315,8 @@ var eval = function (atom, scope) {
 		// console.log(fja + '   args: ' + evaluatedArgs + '  ' + scope);
 		return lib[fja](evaluatedArgs, scope); //fja treba raditi? optimizacija kod OR-a npr...
 
+	} else if (atom instanceof Object) {
+		return atom;
 	} else {
 		var intTry = parseInt(atom); // probaj i double
 		if (isNaN(intTry)) {
@@ -267,7 +332,7 @@ var eval = function (atom, scope) {
 
 var evaluateLine = function (line) {
 	var results = [];
-	var structure = createStructure(splitf(preSplit(line)));
+	var structure = parse(scan(preSplit(line)));
 	for (var g = 0; g < structure.length; g++) {
 		results.push(eval(structure[g], globalScope));
 	}
@@ -275,7 +340,8 @@ var evaluateLine = function (line) {
 };
 
 // console.log(evaluateLine('(defun fact (x) (if (> x 1) (* (fact (- x 1)) x ) (+ 0 1))) (fact 5)'));
-console.log(evaluateLine('( (lambda (x) (+ x 1)) 4 )'));
+console.log(evaluateLine('( defstruct st a b c  )  ( setq disi (make-st a 1 b 2)  )   (st-b disi)'));
+console.log(globalScope);
 
 module.exports = {
 	eval: evaluateLine,

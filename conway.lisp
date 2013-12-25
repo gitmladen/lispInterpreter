@@ -2,23 +2,13 @@
 
 (defun seed () (
   list 
-  (list 1 1 0 0 0) 
-  (list 1 1 1 1 0) 
-  (list 0 1 1 1 1) 
-  (list 1 1 1 1 0) 
-  (list 0 0 0 0 0)
+(list 0 0 0 0 0)
+(list 0 0 0 0 0)
+(list 0 1 1 1 0)
+(list 0 0 0 0 0)
+(list 0 0 0 0 0)
 ))
-;;;3 4 4 2 1
-;;;4 6 6 4 3
-;;;5 7 8 6 3 
-;;;2 4 5 4 3
-;;;2 3 3 2 1
 
-;;;1 0 0 1 0
-;;;0 0 0 0 1
-;;;0 0 0 0 1 
-;;;1 0 0 0 1
-;;;1 1 1 1 0
 
 (defun cell (state row col) (
   nth col (nth row state)
@@ -51,18 +41,36 @@
 (defun evolve (state row) (
   if(> row 3) (cons (evolve-row state row 0) nil)
   (cons (evolve-row state row 0) (evolve state (+ 1 row)))
-  ))
+  ) )
 
-(defun next-state (neighs) (;;;;rules
-  if (< neighs 2) 0;;;;die
-  (if (> neighs 3) 0;;;;die 
-    1);;;live
+
+
+(defun next-state (neighs curst) (;;;;rules
+  if (> curst 0)
+    (
+      if (< neighs 2) 0;;;;die
+       (if (> neighs 3) 0;;;;die 
+        1);;;live
+    )
+    (
+      if (eq neighs 3) 1 0
+    )
+
 ))
 
 (defun evolve-row (state ri ci) (;;;;col je index, row je index
-  if (> ci 3) (cons (next-state (count-live state ri ci)) nil);;;;returnaj cell nemoj nastavljati
-    (cons (next-state (count-live state ri ci))  (evolve-row state ri (+ ci 1));;;;returnaj i nastavi
+  if (> ci 3) (cons (next-state (count-live state ri ci) (nth ci (nth ri state))) nil);;;;returnaj cell nemoj nastavljati
+    (cons (next-state (count-live state ri ci) (nth ci (nth ri state)))  (evolve-row state ri (+ ci 1));;;;returnaj i nastavi
       ))
 )
 
+(defun run (state) 
+(print state) 
+(run (evolve state 0))
+  )
 
+
+
+;;;;count-live(count-exact + 2x count-neigh)
+
+;;;;(next-state 2 (nth 1 (nth 1 (seed)))   )

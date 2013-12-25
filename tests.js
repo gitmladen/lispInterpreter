@@ -212,6 +212,11 @@ describe('Array', function () {
         2
       );
     })
+    it('cons-nested', function () {
+      assert.deepEqual(
+        e('(cons 1 (cons 2 (cons 3 4)) )')[0], [1, 2, 3, 4]
+      );
+    });
 
   })
 })
@@ -256,3 +261,25 @@ describe('Array', function () {
 //     TEST("(riff-shuffle (list 1 2 3 4 5 6 7 8))", "(1 5 2 6 3 7 4 8)");
 //     TEST("((repeat riff-shuffle) (list 1 2 3 4 5 6 7 8))",  "(1 3 5 7 2 4 6 8)");
 //     TEST("(riff-shuffle (riff-shuffle (riff-shuffle (list 1 2 3 4 5 6 7 8))))", "(1 2 3 4 5 6 7 8)");
+
+
+
+// (defun seed () (
+//   list 
+//   (list 1 1 0 0 0) 
+//   (list 1 1 1 1 0) 
+//   (list 0 1 1 1 1) 
+//   (list 1 1 1 1 0) 
+//   (list 0 0 0 0 0)
+// ))
+// ;;;3 4 4 2 1
+// ;;;4 6 6 4 3
+// ;;;5 7 8 6 3 
+// ;;;2 4 5 4 3
+// ;;;2 3 3 2 1
+
+// ;;;1 0 0 1 0
+// ;;;0 0 0 0 1
+// ;;;0 0 0 0 1 
+// ;;;1 0 0 0 1
+// ;;;1 1 1 1 0

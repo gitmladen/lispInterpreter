@@ -1,7 +1,14 @@
 // var kod = '(+ 2 (- 5 4) (* 1 (13 42) 2) )';
 // var kod = '(defun square (x) (* x x))   (square 4)';
+// var lexerTest = function (l) {
+// 	console.log('input: ' + l);
+// 	console.log('replace multy: ' + l.replace(/ +/g, ' '));
+// }
+// lexerTest('d               sda sd    ads asd    das');
+
 
 var preSplit = function (line) {
+	line = line.replace(/ +/g, ' ');
 	return line.replace(/\(/g, ' ( ').replace(/\)/g, ' ) ');
 };
 //lexer
@@ -26,6 +33,7 @@ var scan = function (str) {
 	}
 	console.log('Lexical stage: ');
 	console.log(ret);
+	console.log('======================================');
 	return ret;
 }
 
@@ -57,6 +65,7 @@ var parse = function (tokens) {
 	}
 	console.log('Syntactical stage: ');
 	console.log(ret);
+	console.log('======================================');
 	return ret;
 }
 
@@ -118,10 +127,67 @@ var lib = {
 	},
 	'list': function (args) {
 		ret = [];
+		console.log("list created:  " + args);
 		for (var i = 0; i < args.length; i++) {
-			ret.push(eval(args[i]));
+			ret.push(args[i]);
 		}
 		return ret;
+	},
+	'nth': function (args) {
+		return args[1][parseInt(args[0])];
+	},
+	'print': function (args) {
+		console.log('printing ' + args[0]);
+	},
+	'eq': function (args) {
+		if (args[0] == args[1]) {
+			return true;
+		} else {
+			return false;
+		}
+	},
+	'cons': function (args, scope) { //only in case the eval, evaluates args before passing to function
+		if (args.length != 2) {
+			console.log('Illegal number of arguments to CONS function ' + args.length);
+		}
+		console.log('cons args: ');
+		console.log(args);
+		var fir = args[0];
+		var sec = args[1];
+		var fa = fir instanceof Array;
+		var sa = sec instanceof Array;
+		if (fa) {
+			if (sa) {
+				for (var i = 0; i < sec.length; i++) {
+					fir.push(sec[i]);
+				}
+				return fir;
+			} else {
+				if (sec) {
+					fir.push(sec);
+
+				}
+				return fir;
+			}
+		} else {
+			if (sa) {
+				var ar = new Array();
+				ar.push(fir);
+				for (var i = 0; i < sec.length; i++) {
+					ar.push(sec[i]);
+				}
+				return ar;
+			} else {
+				var ar = new Array();
+				if (fir && sec) {
+					ar.push(fir);
+					ar.push(sec);
+				}
+
+				return ar;
+			}
+		}
+
 	}
 }
 
@@ -146,7 +212,7 @@ var specials = {
 			//calling scope na atributima glavni, definition scope za lokalne varijable ne moze biti pregazen nikako, cak ni definiranjem ponovo u callingscopeu
 			for (var i = 0; i < funcBody.length; i++) {
 				retVal = eval(funcBody[i], bind(params, args, callingScope)); //izostavljen scope u kojem je fja definirana
-				console.log(retVal);
+				//console.log(retVal);
 			}
 
 			return retVal;
@@ -175,7 +241,7 @@ var specials = {
 			return eval(args[2], scope);
 		}
 	},
-	'quote': function (args) {
+	'quote': function (args, scope) {
 		if (args.length != 1) {
 			//raise error, illegal number of arguments
 			throw 'hes dead jim! :/ too many damn arguments';
@@ -339,9 +405,19 @@ var evaluateLine = function (line) {
 	return results;
 };
 
+//load file fja
+
 // console.log(evaluateLine('(defun fact (x) (if (> x 1) (* (fact (- x 1)) x ) (+ 0 1))) (fact 5)'));
-console.log(evaluateLine('( defstruct st a b c  )  ( setq disi (make-st a 1 b 2)  )   (st-b disi)'));
-console.log(globalScope);
+// console.log(evaluateLine('( defstruct st a b c  )  ( setq disi (make-st a 1 b 2)  )   (st-b disi)'));
+
+
+require('fs').readFile('nocomment.lisp', function (err, data) {
+	if (err) {
+		console.log(err);
+	}
+	var data = data.toString().replace(/\n+/g, '');
+	console.log(evaluateLine(data.toString()));
+});
 
 module.exports = {
 	eval: evaluateLine,

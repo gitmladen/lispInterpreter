@@ -7,12 +7,12 @@
 // lexerTest('d               sda sd    ads asd    das');
 
 
-var preSplit = function (line) {
+var preSplit = function(line) {
 	line = line.replace(/ +/g, ' ');
 	return line.replace(/\(/g, ' ( ').replace(/\)/g, ' ) ');
 };
 //lexer
-var scan = function (str) {
+var scan = function(str) {
 	var ret = new Array();
 	var read = false;
 	var curr = "";
@@ -39,7 +39,7 @@ var scan = function (str) {
 
 // s ( (d s ) ( ) ) ( ((das) sda)(dsad))
 //parser, syntax analysis
-var parse = function (tokens) {
+var parse = function(tokens) {
 	var ret = new Array();
 	for (var i = 0; i < tokens.length; i++) {
 		if (tokens[i] == "(") {
@@ -70,31 +70,31 @@ var parse = function (tokens) {
 }
 
 var lib = {
-	'+': function (args) {
+	'+': function(args) {
 		var res = 0;
 		for (var i = 0; i < args.length; i++) {
 			res += args[i];
 		}
 		return res;
 	},
-	'-': function (args) {
+	'-': function(args) {
 		var res = args.length > 1 ? args[0] : 0;
 		for (var i = args.length > 1 ? 1 : 0; i < args.length; i++) {
 			res -= args[i];
 		}
 		return res; //ako je jedan onda 0-prvi, inace prvi-ostali
 	},
-	'*': function (args) {
+	'*': function(args) {
 		var res = 1;
 		for (var i = 0; i < args.length; i++) {
 			res *= args[i];
 		}
 		return res;
 	},
-	'quote': function (args) {
+	'quote': function(args) {
 
 	},
-	'<': function (args) {
+	'<': function(args) {
 		if (args.length > 2) {
 			return 'NIL';
 		} //kako ovo hendlati?//pa valjda se ocekuje da je evalano vec?!
@@ -104,7 +104,7 @@ var lib = {
 			return false;
 		}
 	},
-	'>': function (args) {
+	'>': function(args) {
 		if (args.length > 2) {
 			return 'NIL';
 		} //kako ovo hendlati?  //isto tako valjda je evalano
@@ -114,18 +114,18 @@ var lib = {
 			return false;
 		}
 	},
-	'lt': function (args) {
+	'lt': function(args) {
 		return this['<'](args);
 	}, //ovako sinonime pisati
 
-	'car': function (args) {
+	'car': function(args) {
 		//checkiraj broj argsa
 		return args[0][0]; //args[0] je lista, 0i clan nje
 	},
-	'cdr': function (args) {
+	'cdr': function(args) {
 		return args[0].slice(1);
 	},
-	'list': function (args) {
+	'list': function(args) {
 		ret = [];
 		console.log("list created:  " + args);
 		for (var i = 0; i < args.length; i++) {
@@ -133,20 +133,21 @@ var lib = {
 		}
 		return ret;
 	},
-	'nth': function (args) {
+	'nth': function(args) {
 		return args[1][parseInt(args[0])];
 	},
-	'print': function (args) {
+	'print': function(args) {
+		console.log('printing: ');
 		console.log('printing ' + args[0]);
 	},
-	'eq': function (args) {
+	'eq': function(args) {
 		if (args[0] == args[1]) {
 			return true;
 		} else {
 			return false;
 		}
 	},
-	'cons': function (args, scope) { //only in case the eval, evaluates args before passing to function
+	'cons': function(args, scope) { //only in case the eval, evaluates args before passing to function
 		if (args.length != 2) {
 			console.log('Illegal number of arguments to CONS function ' + args.length);
 		}
@@ -188,12 +189,22 @@ var lib = {
 			}
 		}
 
+	},
+	'load': function(args, scope) {
+		console.log('loading file: ');
+		console.log(args[0]);
+		//var fs = require('fs');
+		//var contents = fs.readFileSync(args[0]).toString();
+
+		//contents = contents.replace(/\n+/g, '');
+		//console.log(evaluateLine(data.toString()));
+
 	}
 }
 
 
 //binds formal to actual params creating new closure with the calling one as parent and still accessible if not hidden by the new binding
-var bind = function (formal, actual, parentScope) {
+var bind = function(formal, actual, parentScope) {
 	var closure = {};
 	for (var i = 0; i < formal.length; i++) {
 		closure[formal[i]] = actual[i];
@@ -203,11 +214,11 @@ var bind = function (formal, actual, parentScope) {
 };
 
 var specials = {
-	'defun': function (args, definitionScope) { //ime fje (arg or multy) (body) (body2) (body3)
+	'defun': function(args, definitionScope) { //ime fje (arg or multy) (body) (body2) (body3)
 		var funcName = args[0];
 		var params = args[1];
 		var funcBody = args.slice(2);
-		var fun = function (args, callingScope) {
+		var fun = function(args, callingScope) {
 			var retVal = null;
 			//calling scope na atributima glavni, definition scope za lokalne varijable ne moze biti pregazen nikako, cak ni definiranjem ponovo u callingscopeu
 			for (var i = 0; i < funcBody.length; i++) {
@@ -221,14 +232,14 @@ var specials = {
 		lib[funcName] = fun;
 		return funcName;
 	},
-	'lambda': function (params, body, args, scope) {
+	'lambda': function(params, body, args, scope) {
 		for (var i = 0; i < args.length; i++) {
 			args[i] = eval(args[i], scope);
 		}
 		return eval(body, bind(params, args, scope));
 
 	},
-	'if': function (args, scope) {
+	'if': function(args, scope) {
 		if (args.length != 3) {
 			//raise error, wrong number of arguments
 			return false;
@@ -241,7 +252,7 @@ var specials = {
 			return eval(args[2], scope);
 		}
 	},
-	'quote': function (args, scope) {
+	'quote': function(args, scope) {
 		if (args.length != 1) {
 			//raise error, illegal number of arguments
 			throw 'hes dead jim! :/ too many damn arguments';
@@ -249,7 +260,7 @@ var specials = {
 		}
 		return args[0]; //ne evaluatea nist, samo vrati
 	},
-	'let': function (args, scope) {
+	'let': function(args, scope) {
 		var bindings = args[0];
 		var bodies = args.slice(1);
 
@@ -273,7 +284,7 @@ var specials = {
 
 		return res;
 	},
-	'setq': function (args, scope) {
+	'setq': function(args, scope) {
 		var val;
 		var symbol;
 		for (var i = 0; i < args.length; i += 2) {
@@ -283,7 +294,7 @@ var specials = {
 		}
 		return val;
 	},
-	'defstruct': function (args, scope) {
+	'defstruct': function(args, scope) {
 		//strukture su immutable
 		//generira strukturu
 		//u fje doda za svaki atribut structa    imestructa-atribut fju
@@ -296,7 +307,7 @@ var specials = {
 		struct.accessors = [];
 		struct.setters = [];
 
-		attributes.forEach(function (attr) {
+		attributes.forEach(function(attr) {
 			struct.attributes[attr] = null;
 		});
 
@@ -304,7 +315,7 @@ var specials = {
 		console.log(struct);
 
 		var constructorName = 'make-' + name;
-		var constructor = function (consArgs, callingScope) { //argsi pocinju s :
+		var constructor = function(consArgs, callingScope) { //argsi pocinju s :
 			var instance = {};
 			for (var definedAttr in struct.attributes) {
 				if (struct.attributes.hasOwnProperty(definedAttr)) {
@@ -322,11 +333,11 @@ var specials = {
 			return instance;
 		}
 
-		attributes.forEach(function (attr) {
+		attributes.forEach(function(attr) {
 			var accessorName = name + '-' + attr;
 
 			console.log('creating accessor ' + accessorName);
-			var accessor = function (args) {
+			var accessor = function(args) {
 				var instance = args[0];
 				return instance[attr];
 			}
@@ -351,7 +362,7 @@ var structures = {
 };
 
 
-var eval = function (atom, scope) {
+var eval = function(atom, scope) {
 	//ako je array, onda je s-izraz inace atom
 	// console.log(atom);
 	if (atom instanceof Array) {
@@ -396,7 +407,7 @@ var eval = function (atom, scope) {
 }
 
 
-var evaluateLine = function (line) {
+var evaluateLine = function(line) {
 	var results = [];
 	var structure = parse(scan(preSplit(line)));
 	for (var g = 0; g < structure.length; g++) {
@@ -405,21 +416,42 @@ var evaluateLine = function (line) {
 	return results;
 };
 
+
+
 //load file fja
 
 // console.log(evaluateLine('(defun fact (x) (if (> x 1) (* (fact (- x 1)) x ) (+ 0 1))) (fact 5)'));
 // console.log(evaluateLine('( defstruct st a b c  )  ( setq disi (make-st a 1 b 2)  )   (st-b disi)'));
 
+// var sys = require("sys");
 
-require('fs').readFile('nocomment.lisp', function (err, data) {
-	if (err) {
-		console.log(err);
-	}
-	var data = data.toString().replace(/\n+/g, '');
-	console.log(evaluateLine(data.toString()));
-});
+// var stdin = process.openStdin();
+
+// stdin.addListener("data", function(d) {
+// 	console.log('pre');
+// 	console.log(d);
+// 	var input = d.toString().substring(0, d.length - 1);
+// 	console.log('line: ' + input);
+// 	console.log(evaluateLine(input));
+
+// });
+
+var output = null;
+
+
+var defaultOutput = function(out) {
+	console.log(out);
+};
+var setOutput = function(newOutput) {
+	output = newOutput;
+}
+
+output = defaultOutput;
+
+
 
 module.exports = {
 	eval: evaluateLine,
+	onOutput: setOutput
 
 };

@@ -54,12 +54,13 @@
 
 ))
 
-(defun evolve-row (state ri ci) (
+(defun evolve-row (state ri ci)  (print (list ri ci (next-state (count-live state ri ci) (nth ci (nth ri state)))   ))
+  (
   if (> ci (- m 2)) (cons (next-state (count-live state ri ci) (nth ci (nth ri state))) nil)
     (cons (next-state (count-live state ri ci) (nth ci (nth ri state)))  (evolve-row state ri (+ ci 1))
       ))
 )
 
 (setq stanje (evolve (seed) 0))
-(do ((iter 1 (+ iter 1))) ((> iter 20) 1) (setq  stanje (evolve stanje 0)) (print stanje))
+(do ((iter 1 (+ iter 1))) ((> iter 20) 1) (setq  stanje (evolve stanje 0)))
 

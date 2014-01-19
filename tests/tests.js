@@ -218,6 +218,9 @@ describe('Array', function() {
       );
     });
 
+    //DO LOOP tests
+    //CONS
+
   })
 })
 

@@ -1,79 +1,13 @@
-// var kod = '(+ 2 (- 5 4) (* 1 (13 42) 2) )';
-// var kod = '(defun square (x) (* x x))   (square 4)';
-// var lexerTest = function (l) {
-// 	console.log('input: ' + l);
-// 	console.log('replace multy: ' + l.replace(/ +/g, ' '));
-// }
-// lexerTest('d               sda sd    ads asd    das');
-
 (function(undefined) {
 
-	var hasModule = (typeof module !== 'undefined' && module.exports && typeof require !== 'undefined');
+	var isNodeJsEnvironment = (typeof module !== 'undefined' && module.exports && typeof require !== 'undefined');
 	var global = this;
-
-	var preSplit = function(line) {
-		line = line.replace(/[\n\r]/g, '');
-		line = line.replace(/ +/g, ' ');
-		return line.replace(/\(/g, ' ( ').replace(/\)/g, ' ) ');
+	var globalScope = {
+		'T': true,
+		'NIL': false
 	};
-
-	//lexer
-	var scan = function(str) {
-		var ret = new Array();
-		var read = false;
-		var curr = "";
-		// var skip = false;
-		// var skipChar = "";
-		for (var i = 0; i < str.length; i++) {
-			var c = str.charAt(i);
-			if (c == " ") {
-				if (read) {
-					ret.push(curr);
-				}
-				curr = "";
-				read = false;
-			} else {
-				curr += c;
-				if (!read) read = true;
-			}
-		}
-		console.log('Lexical stage: ');
-		console.log(ret);
-		console.log('======================================');
-		return ret;
-	};
-
-	// s ( (d s ) ( ) ) ( ((das) sda)(dsad))
-	//parser, syntax analysis
-	var parse = function(tokens) {
-		var ret = new Array();
-		for (var i = 0; i < tokens.length; i++) {
-			if (tokens[i] == "(") {
-				ret.push(parse(tokens.slice(i + 1)));
-				i++;
-				var j = 0;
-				while (true) { //fastforward sramota
-					if (j == 0 && tokens[i] == ")") break;
-					if (tokens[i] == "(") {
-						j++;
-					} else if (tokens[i] == ")") {
-						j--;
-					}
-					i++;
-				}
-			} else if (tokens[i] == ")") {
-				return ret;
-			} else {
-				ret.push(tokens[i]);
-			}
-			// console.log(ret);
-
-		}
-		console.log('Syntactical stage: ');
-		console.log(ret);
-		console.log('======================================');
-		return ret;
-	};
+	var structures = {};
+	var output = null;
 
 	var lib = {
 		'+': function(args) {
@@ -144,7 +78,7 @@
 		},
 		'print': function(args) {
 			console.log('printing: ');
-			console.log('printing ' + args[0]);
+			console.log('printing ' + args);
 			output(args[0]);
 		},
 		'eq': function(args) {
@@ -219,27 +153,17 @@
 		}
 	};
 
-	//binds formal to actual params creating new closure with the calling one as parent and still accessible if not hidden by the new binding
-	var bind = function(formal, actual, parentScope) {
-		var closure = {};
-		for (var i = 0; i < formal.length; i++) {
-			closure[formal[i]] = actual[i];
-		}
-		closure.__proto__ = parentScope;
-		return closure;
-	};
-
 	var specials = {
 		'defun': function(args, definitionScope) { //ime fje (arg or multy) (body) (body2) (body3)
 			var funcName = args[0];
 			var params = args[1];
 			var funcBody = args.slice(2);
+
 			var fun = function(args, callingScope) {
 				var retVal = null;
 				//calling scope na atributima glavni, definition scope za lokalne varijable ne moze biti pregazen nikako, cak ni definiranjem ponovo u callingscopeu
 				for (var i = 0; i < funcBody.length; i++) {
 					retVal = eval(funcBody[i], bind(params, args, callingScope)); //izostavljen scope u kojem je fja definirana
-					//console.log(retVal);
 				}
 
 				return retVal;
@@ -253,7 +177,6 @@
 				args[i] = eval(args[i], scope);
 			}
 			return eval(body, bind(params, args, scope));
-
 		},
 		'if': function(args, scope) {
 			if (args.length != 3) {
@@ -261,8 +184,6 @@
 				return false;
 			}
 			if (eval(args[0], scope)) {
-				// console.log('true ' + args[1]);
-				// console.log('true ' + args[1]);
 				return eval(args[1], scope);
 			} else {
 				return eval(args[2], scope);
@@ -393,52 +314,132 @@
 		}
 	};
 
-	var globalScope = {
-		'T': true,
-		'NIL': false,
+	var preSplit = function(line) {
+		line = line.replace(/[\n\r]/g, '');
+		line = line.replace(/ +/g, ' ');
+		return line.replace(/\(/g, ' ( ').replace(/\)/g, ' ) ');
 	};
 
-	var structures = {};
+	//lexer
+	var scan = function(str) {
+		var ret = [];
+		var read = false;
+		var curr = "";
+
+		for (var i = 0; i < str.length; i++) {
+			var c = str.charAt(i);
+			if (c == " ") {
+				if (read) {
+					ret.push(curr);
+				}
+				curr = "";
+				read = false;
+			} else {
+				curr += c;
+				if (!read) read = true;
+			}
+		}
+
+		console.log('Lexical stage: ');
+		console.log(ret);
+		console.log('======================================');
+		return ret;
+	};
+
+	//parser, syntax analysis
+	var parse = function(tokens) {
+		var ret = [];
+
+		if (tokens.length < 2) {
+			error('Invalid token number');
+		}
+
+		for (var i = 0; i < tokens.length; i++) {
+			if (tokens[i] == "(") {
+				ret.push(parse(tokens.slice(i + 1)));
+				i++;
+				var j = 0;
+				while (true) { //fastforward sramota
+					if (i >= tokens.length) {
+						error('Syntax error. Missing some closing brackets.');
+					}
+
+					if (j === 0 && tokens[i] === ')') {
+						break;
+					}
+
+					if (tokens[i] == "(") {
+						j++;
+					} else if (tokens[i] == ")") {
+						j--;
+					}
+
+					i++;
+				}
+			} else if (tokens[i] == ")") {
+				return ret;
+			} else {
+				ret.push(tokens[i]);
+			}
+		}
+
+		console.log('Syntactical stage: ');
+		console.log(ret);
+		console.log('======================================');
+		return ret;
+	};
+
+	//binds formal to actual params creating new closure with the calling one as parent and still accessible if not hidden by the new binding
+	var bind = function(formal, actual, parentScope) {
+		var closure = {};
+		for (var i = 0; i < formal.length; i++) {
+			closure[formal[i]] = actual[i];
+		}
+		closure.__proto__ = parentScope;
+		return closure;
+	};
 
 	var eval = function(atom, scope) {
 		//ako je array, onda je s-izraz inace atom
-		// console.log(atom);
 		if (atom instanceof Array) {
-			// console.log(atom + " je s-izraz " + scope);
 			var fja = atom[0];
 			var args = atom.slice(1);
+
+			// Check if lambda
 			if (fja instanceof Array) {
 				if (fja[0].toLowerCase() == 'lambda') {
 					var lParams = fja[1];
 					var lBody = fja[2];
 					return specials.lambda(lParams, lBody, args, scope);
-
 				} else {
-					throw 'lambda err'
+					error('Invalid lambda expression');
 				}
 			}
-			//check if special..
+
+			//check if special
 			if (specials.hasOwnProperty(fja)) {
 				return specials[fja](args, scope); //specialsi vracaju function obj
 			};
-			// console.log(args+" args");
+
 			//postoji li fja, evalaj redom argse, prosljedi ih fji
-			var evaluatedArgs = new Array();
+			var evaluatedArgs = [];
 			for (var i = 0; i < args.length; i++) {
 				evaluatedArgs.push(eval(args[i], scope));
 			}
-			// console.log(fja + '   args: ' + evaluatedArgs + '  ' + scope);
-			return lib[fja](evaluatedArgs, scope); //fja treba raditi? optimizacija kod OR-a npr...
 
+			if (lib.hasOwnProperty(fja)) {
+				//fja treba raditi? optimizacija kod OR-a npr...
+				return lib[fja](evaluatedArgs, scope);
+			} else {
+				error('Undefined function');
+			}
 		} else if (atom instanceof Object) {
 			return atom;
 		} else {
-			var intTry = parseInt(atom); // probaj i double
+			var intTry = parseInt(atom, 10); // probaj i double
 			if (isNaN(intTry)) {
 				return scope[atom];
 			} else {
-				//broj je
-				// console.log(atom+" je broj");
 				return intTry;
 			}
 		}
@@ -458,25 +459,10 @@
 		return results;
 	};
 
-	//load file fja
-
-	// console.log(evaluateLine('(defun fact (x) (if (> x 1) (* (fact (- x 1)) x ) (+ 0 1))) (fact 5)'));
-	// console.log(evaluateLine('( defstruct st a b c  )  ( setq disi (make-st a 1 b 2)  )   (st-b disi)'));
-
-	// var sys = require("sys");
-
-	// var stdin = process.openStdin();
-
-	// stdin.addListener("data", function(d) {
-	// 	console.log('pre');
-	// 	console.log(d);
-	// 	var input = d.toString().substring(0, d.length - 1);
-	// 	console.log('line: ' + input);
-	// 	console.log(evaluateLine(input));
-
-	// });
-
-	var output = null;
+	var error = function(errorText) {
+		output(errorText);
+		throw 'LISP Error: ' + errorText;
+	};
 
 	var defaultOutput = function(out) {
 		console.log(out);
@@ -484,7 +470,7 @@
 
 	var setOutput = function(newOutput) {
 		output = newOutput;
-	}
+	};
 
 	output = defaultOutput;
 
@@ -493,9 +479,7 @@
 		onOutput: setOutput
 	};
 
-	this.LispJS = exports;
-
-	if (hasModule) {
+	if (isNodeJsEnvironment) {
 		require('fs').readFile('programs/nocomment.lisp', function(err, data) {
 			if (err) {
 				console.log(err);
@@ -506,6 +490,8 @@
 		});
 
 		module.exports = exports;
+	} else {
+		this.LispJS = exports;
 	}
 
 }).call(this);

@@ -6,7 +6,10 @@
 // }
 // lexerTest('d               sda sd    ads asd    das');
 
-(function() {
+(function(undefined) {
+
+	var hasModule = (typeof module !== 'undefined' && module.exports && typeof require !== 'undefined');
+	var global = this;
 
 	var preSplit = function(line) {
 		line = line.replace(/ +/g, ' ');
@@ -442,9 +445,23 @@
 
 	output = defaultOutput;
 
-	window.ListJS = {
+	var exports = {
 		eval: evaluateLine,
 		onOutput: setOutput
 	};
 
-})();
+	this.LispJS = exports;
+
+	if (hasModule) {
+		require('fs').readFile('programs/nocomment.lisp', function(err, data) {
+			if (err) {
+				console.log(err);
+			}
+			var data = data.toString().replace(/\n+/g, '');
+			console.log(evaluateLine(data.toString()));
+		});
+
+		module.exports = exports;
+	}
+
+}).call(this);

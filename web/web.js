@@ -5,6 +5,13 @@
   var $outputTextarea = $('.output-textarea');
   var LispJS = window.LispJS;
   var localStorage = window.localStorage;
+  var keysDown = [];
+  var shiftPressed = false;
+  var KeyCode = {
+    TAB: 9,
+    SHIFT: 16,
+    ENTER: 13
+  };
 
   var appendOutput = function(output) {
     $outputTextarea.append(output);
@@ -30,9 +37,39 @@
     }
   };
 
+  var onInputTexareaKeyup = function(e) {
+    if (e.keyCode === KeyCode.SHIFT) {
+      shiftPressed = false;
+    }
+    if (shiftPressed && e.keyCode === KeyCode.ENTER) {
+      runScript();
+      e.preventDefault();
+    }
+  };
+
+  var onInputTextareaKeydown = function(e) {
+    if (e.keyCode === KeyCode.SHIFT) {
+      shiftPressed = true;
+    }
+    if (e.keyCode === KeyCode.TAB) {
+      e.preventDefault();
+    }
+  };
+
   var setEventListeners = function() {
     $btnRun.on('click', runScript);
+    $inputTextarea.on('keyup', onInputTexareaKeyup);
+    $inputTextarea.on('keydown', onInputTextareaKeydown);
   };
+
+  // var insertTextAtCursor = function($textArea, text){
+  //               var cursorPos = $textArea.prop('selectionStart');
+  //               var v = $textArea.val();
+  //               var textBefore = v.substring(0,  cursorPos );
+  //               var textAfter  = v.substring( cursorPos, v.length );
+
+  //               $('#text').val( textBefore+ $(this).val() +textAfter );
+  //           };
 
   LispJS.onOutput(onLispJSOutput);
 

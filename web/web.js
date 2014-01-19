@@ -7,7 +7,7 @@
   var localStorage = window.localStorage;
 
   var onLispJSOutput = function(output) {
-    $outputTextarea.html(output);
+    $outputTextarea.append(output + '\n\n');
   };
 
   var runScript = function() {

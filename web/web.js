@@ -54,6 +54,9 @@
     if (e.keyCode === KeyCode.TAB) {
       e.preventDefault();
     }
+    if (e.keyCode === KeyCode.ENTER && shiftPressed) {
+      e.preventDefault();
+    }
   };
 
   var setEventListeners = function() {
@@ -61,15 +64,6 @@
     $inputTextarea.on('keyup', onInputTexareaKeyup);
     $inputTextarea.on('keydown', onInputTextareaKeydown);
   };
-
-  // var insertTextAtCursor = function($textArea, text){
-  //               var cursorPos = $textArea.prop('selectionStart');
-  //               var v = $textArea.val();
-  //               var textBefore = v.substring(0,  cursorPos );
-  //               var textAfter  = v.substring( cursorPos, v.length );
-
-  //               $('#text').val( textBefore+ $(this).val() +textAfter );
-  //           };
 
   LispJS.onOutput(onLispJSOutput);
 

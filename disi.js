@@ -97,7 +97,7 @@
 			return res;
 		},
 		'quote': function(args) {
-
+			return args[0];
 		},
 		'<': function(args) {
 			if (args.length > 2) {
@@ -196,14 +196,21 @@
 
 		},
 		'load': function(args, scope) {
-			console.log('loading file: ');
-			console.log(args[0]);
+			// console.log('loading file: ');
+			// console.log(args[0]);
 			//var fs = require('fs');
 			//var contents = fs.readFileSync(args[0]).toString();
 
 			//contents = contents.replace(/\n+/g, '');
 			//console.log(evaluateLine(data.toString()));
 
+		},
+		'load-net': function(args, scope) {
+			$.ajax({
+				url: args[0],
+			}).done(function(body) {
+				debugger
+			});
 		}
 	};
 

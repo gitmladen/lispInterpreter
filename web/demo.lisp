@@ -62,5 +62,4 @@
 )
 
 (setq stanje (evolve (seed) 0))
-(do ((iter 1 (+ iter 1))) ((> iter 20) 1) (setq  stanje (evolve stanje 0)))
 

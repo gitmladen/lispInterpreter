@@ -58,8 +58,6 @@
       ))
 )
 
-(defun run (state) 
-(print state) 
-(run (evolve state 0))
-  )
+(setq stanje (evolve (seed) 0))
+(do ((iter 1 (+ iter 1))) ((> iter 20) 1) (setq  stanje (evolve stanje 0)) (print stanje))
 

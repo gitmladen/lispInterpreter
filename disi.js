@@ -12,6 +12,7 @@
 	var global = this;
 
 	var preSplit = function(line) {
+		line = line.replace(/[\n\r]/g, '');
 		line = line.replace(/ +/g, ' ');
 		return line.replace(/\(/g, ' ( ').replace(/\)/g, ' ) ');
 	};
@@ -144,6 +145,7 @@
 		'print': function(args) {
 			console.log('printing: ');
 			console.log('printing ' + args[0]);
+			output(args[0]);
 		},
 		'eq': function(args) {
 			if (args[0] == args[1]) {
@@ -155,6 +157,7 @@
 		'cons': function(args, scope) { //only in case the eval, evaluates args before passing to function
 			if (args.length != 2) {
 				console.log('Illegal number of arguments to CONS function ' + args.length);
+				output('Illegal number of arguments to CONS function ' + args.length);
 			}
 			console.log('cons args: ');
 			console.log(args);
@@ -209,7 +212,7 @@
 			$.ajax({
 				url: args[0],
 			}).done(function(body) {
-				debugger
+				evaluateLine(body);
 			});
 		}
 	};
@@ -323,7 +326,9 @@
 			});
 
 			console.log('defined: ' + name);
+			output('defined: ' + name);
 			console.log(struct);
+			output(struct);
 
 			var constructorName = 'make-' + name;
 			var constructor = function(consArgs, callingScope) { //argsi pocinju s :
@@ -340,7 +345,9 @@
 				}
 
 				console.log('constructed: ');
+				output('constructed: ');
 				console.log(instance);
+				output(instance);
 				return instance;
 			}
 
@@ -348,6 +355,7 @@
 				var accessorName = name + '-' + attr;
 
 				console.log('creating accessor ' + accessorName);
+				output('creating accessor ' + accessorName);
 				var accessor = function(args) {
 					var instance = args[0];
 					return instance[attr];
@@ -419,6 +427,9 @@
 		for (var g = 0; g < structure.length; g++) {
 			results.push(eval(structure[g], globalScope));
 		}
+		for (var g = 0; g < results.length; g++) {
+			output(results[g]);
+		}
 		return results;
 	};
 
@@ -463,6 +474,7 @@
 		require('fs').readFile('programs/nocomment.lisp', function(err, data) {
 			if (err) {
 				console.log(err);
+				output(err);
 			}
 			var data = data.toString().replace(/\n+/g, '');
 			console.log(evaluateLine(data.toString()));

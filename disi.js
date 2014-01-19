@@ -164,12 +164,38 @@
 			var res = [];
 			var fir = args[0];
 			var sec = args[1];
+			console.log("uslo: -------------------");
+			console.log(fir);
+			console.log(sec);
+			var fa = fir instanceof Array;
+			var sa = sec instanceof Array;
 
-			if (fir !== undefined) {
-				res = res.concat(fir);
-			}
-			if (sec !== undefined) {
-				res = res.concat(sec);
+
+			if (fa) {
+				if (sa) {
+					res.push(fir);
+					debugger
+					return res.concat(sec);
+				} else {
+					if (sec !== undefined)
+						return fir.concat(sec);
+					else {
+						res.push(fir);
+						return res;
+					}
+				}
+			} else {
+				if (sa) {
+					res.push(fir);
+					return res.concat(sec);
+				} else {
+					if (fir !== undefined)
+						res.push(fir);
+					if (sec !== undefined)
+						res.push(sec);
+					return res;
+				}
+
 			}
 
 			return res;
@@ -343,6 +369,27 @@
 
 			specials[constructorName] = constructor; //konstruktori specialsi jer oni ne evalaju argumente, vratiti na fje kad se doda :arg
 			return name;
+		},
+		'do': function(args, scope) { //  (do ((x 1 (+ x 1))) ((eq 2 1) 1) (print x)) //DO-WHILE!
+			debugger
+			var init = args[0][0]; //only one init and increment for now
+			var inc = init[2];
+
+			var cond = args[1][0];
+			var retValue = args[1][1];
+			//setting scope variables
+			scope[init[0]] = eval(init[1], scope);
+
+			var bodies = args.slice(2); //also one for now, multiplying trivial
+
+			do {
+				for (var i = 0; i < bodies.length; i++) {
+					eval(bodies[i], scope);
+				}
+				scope[init[0]] = eval(inc, scope);
+			} while (!eval(cond, scope));
+
+			return retValue;
 		}
 	};
 
@@ -400,9 +447,11 @@
 	var evaluateLine = function(line) {
 		var results = [];
 		var structure = parse(scan(preSplit(line)));
+		debugger
 		for (var g = 0; g < structure.length; g++) {
 			results.push(eval(structure[g], globalScope));
 		}
+		debugger
 		for (var g = 0; g < results.length; g++) {
 			output(results[g]);
 		}

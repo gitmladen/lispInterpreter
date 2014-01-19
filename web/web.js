@@ -6,8 +6,13 @@
   var LispJS = window.LispJS;
   var localStorage = window.localStorage;
 
+  var appendOutput = function(output) {
+    $outputTextarea.append(output);
+    $outputTextarea.scrollTop($outputTextarea[0].scrollHeight);
+  };
+
   var onLispJSOutput = function(output) {
-    $outputTextarea.append(output + '\n\n');
+    appendOutput('> ' + output + '\n')
   };
 
   var runScript = function() {
@@ -15,6 +20,7 @@
     localStorage.setItem('lastScript', script);
 
     LispJS.eval(script);
+    appendOutput('\n');
   };
 
   var loadLastScript = function() {

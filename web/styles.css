@@ -9,9 +9,10 @@
   right: 0;
 }
 .playground-container .input-textarea {
-  width: 100%;
-  height: 100%;
+  width: 97%;
+  height: 95%;
   border: 0;
+  padding: 10px;
   resize: none;
   background-color: transparent;
   position: relative;
@@ -19,8 +20,13 @@
 }
 .playground-container .top-container .controls {
   position: absolute;
-  bottom: 0;
-  right: 0;
+  bottom: 5px;
+  right: 5px;
+}
+.playground-container .top-container .controls > button {
+  padding: 5px 20px;
+  font-size: 16px;
+  font-weight: bold;
 }
 
 

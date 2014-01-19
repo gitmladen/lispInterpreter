@@ -35,6 +35,8 @@
     ctx.clearRect(x + 1, y + 1, rectSize - 2, rectSize - 2);
   };
 
+  drawBoard();
+
   LispJS.onOutput = function(output) {
     var kurec = output.split(',');
     if (kurec instanceof Array && kurec.length === 3) {
@@ -49,5 +51,7 @@
     }
   };
 
-  drawBoard();
+  LispJS.eval('(load-net (quote demo.lisp))');
+
+
 })();

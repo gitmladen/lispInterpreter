@@ -157,46 +157,22 @@
 		'cons': function(args, scope) { //only in case the eval, evaluates args before passing to function
 			if (args.length != 2) {
 				console.log('Illegal number of arguments to CONS function ' + args.length);
-				output('Illegal number of arguments to CONS function ' + args.length);
+				return output('Illegal number of arguments to CONS function ' + args.length);
 			}
-			console.log('cons args: ');
-			console.log(args);
+			console.log('cons args:', args);
+
+			var res = [];
 			var fir = args[0];
 			var sec = args[1];
-			var fa = fir instanceof Array;
-			var sa = sec instanceof Array;
-			if (fa) {
-				if (sa) {
-					for (var i = 0; i < sec.length; i++) {
-						fir.push(sec[i]);
-					}
-					return fir;
-				} else {
-					if (sec) {
-						fir.push(sec);
 
-					}
-					return fir;
-				}
-			} else {
-				if (sa) {
-					var ar = new Array();
-					ar.push(fir);
-					for (var i = 0; i < sec.length; i++) {
-						ar.push(sec[i]);
-					}
-					return ar;
-				} else {
-					var ar = new Array();
-					if (fir && sec) {
-						ar.push(fir);
-						ar.push(sec);
-					}
-
-					return ar;
-				}
+			if (fir !== undefined) {
+				res = res.concat(fir);
+			}
+			if (sec !== undefined) {
+				res = res.concat(sec);
 			}
 
+			return res;
 		},
 		'load': function(args, scope) {
 			// console.log('loading file: ');

@@ -12,6 +12,7 @@
 	var global = this;
 
 	var preSplit = function(line) {
+		line = line.replace(/[\n\r]/g, '');
 		line = line.replace(/ +/g, ' ');
 		return line.replace(/\(/g, ' ( ').replace(/\)/g, ' ) ');
 	};
@@ -209,7 +210,7 @@
 			$.ajax({
 				url: args[0],
 			}).done(function(body) {
-				debugger
+				evaluateLine(body);
 			});
 		}
 	};

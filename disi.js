@@ -93,14 +93,11 @@
 				console.log('Illegal number of arguments to CONS function ' + args.length);
 				return output('Illegal number of arguments to CONS function ' + args.length);
 			}
-			console.log('cons args:', args);
 
 			var res = [];
 			var fir = args[0];
 			var sec = args[1];
-			console.log("uslo: -------------------");
-			console.log(fir);
-			console.log(sec);
+
 			var fa = fir instanceof Array;
 			var sa = sec instanceof Array;
 
@@ -448,11 +445,9 @@
 	var evaluateLine = function(line) {
 		var results = [];
 		var structure = parse(scan(preSplit(line)));
-		debugger
 		for (var g = 0; g < structure.length; g++) {
 			results.push(eval(structure[g], globalScope));
 		}
-		debugger
 		for (var g = 0; g < results.length; g++) {
 			output(results[g]);
 		}

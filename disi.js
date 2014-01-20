@@ -234,8 +234,8 @@
 				struct.attributes[attr] = null;
 			});
 
-			output('defined: ' + name);
-			output(struct);
+			// output('defined: ' + name);
+			// output(struct);
 
 			var constructorName = 'make-' + name;
 			var constructor = function(consArgs, callingScope) { //argsi pocinju s :
@@ -250,15 +250,15 @@
 					instance[consArgs[i]] = consArgs[i + 1];
 				}
 
-				output('constructed: ');
-				output(instance);
+				// output('constructed: ');
+				// output(instance);
 				return instance;
 			}
 
 			attributes.forEach(function(attr) {
 				var accessorName = name + '-' + attr;
 
-				output('creating accessor ' + accessorName);
+				// output('creating accessor ' + accessorName);
 				var accessor = function(args) {
 					var instance = args[0];
 					return instance[attr];

@@ -1,14 +1,15 @@
 (setq m 7)
+(setq n 17)
 
 (defun seed () (
   list 
-(list 0 0 0 0 0 0 0)
-(list 0 0 0 0 0 0 0)
-(list 0 1 1 1 0 0 0)
-(list 0 0 0 0 0 0 0)
-(list 0 0 0 0 0 0 0)
-(list 0 0 0 0 0 0 0)
-(list 0 0 0 0 0 0 0)
+(list 0 0 0 0 0 0 0 1 0 1 0 1 0 0 1 0 0)
+(list 0 0 0 0 0 0 0 1 1 0 1 1 0 1 0 1 1)
+(list 0 1 1 1 0 0 0 0 1 0 1 1 0 0 0 1 0)
+(list 0 0 0 0 0 0 0 0 1 0 1 0 1 0 1 0 1)
+(list 0 0 0 0 0 0 0 0 1 0 1 0 1 0 1 0 1)
+(list 0 0 0 0 0 0 0 0 1 1 0 1 0 1 0 1 0)
+(list 0 0 0 0 0 0 0 0 1 0 1 0 0 1 1 0 1)
 ))
 
 
@@ -24,14 +25,14 @@
   ))
 (defun count-neigh (row index) (
   if (eq index 0) (+ (nth (+ index 1) row) (nth index row))
-    (if (eq index (- m 1)) (+ (nth (- index 1) row) (nth index row)) 
+    (if (eq index (- n 1)) (+ (nth (- index 1) row) (nth index row)) 
       (+ (nth (- index 1) row ) (nth index row)  (nth (+ index 1) row ) ) 
       )
   ))
 
 (defun count-exact (row index) (
   if (eq index 0) (nth (+ index 1) row)
-    (if (eq index (- m 1)) (nth (- index 1) row) 
+    (if (eq index (- n 1)) (nth (- index 1) row) 
       (+ (nth (- index 1) row )  (nth (+ index 1) row ) ) 
       )
   ))
@@ -56,7 +57,7 @@
 
 (defun evolve-row (state ri ci)  (print (list ri ci (next-state (count-live state ri ci) (nth ci (nth ri state)))   ))
   (
-  if (> ci (- m 2)) (cons (next-state (count-live state ri ci) (nth ci (nth ri state))) nil)
+  if (> ci (- n 2)) (cons (next-state (count-live state ri ci) (nth ci (nth ri state))) nil)
     (cons (next-state (count-live state ri ci) (nth ci (nth ri state)))  (evolve-row state ri (+ ci 1))
       ))
 )

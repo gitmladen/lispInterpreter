@@ -2,14 +2,14 @@
 
   var N = 17;
 
-  var canvasWidth = 300;
+  var canvasWidth = 500;
   var rectSize = canvasWidth / N;
   var canvas = document.getElementById('canvas');
   var ctx = canvas.getContext('2d');
   var LispJS = window.LispJS;
   window.canvas = canvas;
   var playing = false;
-  var speed = 1000;
+  var speed = 200;
 
   var $btnPlay = $('.button-play');
   var $btnPause = $('.button-pause');
@@ -20,12 +20,12 @@
   var drawBoard = function() {
     for (var x = rectSize; x < canvasWidth; x += rectSize) {
       ctx.moveTo(x, 0);
-      ctx.lineTo(x, 300);
+      ctx.lineTo(x, canvasWidth);
     }
 
     for (var y = rectSize; y < canvasWidth; y += rectSize) {
       ctx.moveTo(0, y);
-      ctx.lineTo(300, y);
+      ctx.lineTo(canvasWidth, y);
     }
 
     ctx.strokeStyle = "#999";
@@ -35,22 +35,24 @@
   var drawRect = function(x, y) {
     var x = x * rectSize;
     var y = y * rectSize;
-    ctx.fillRect(x + 1, y + 1, rectSize - 2, rectSize - 2);
+    ctx.fillRect(y + 1, x + 1, rectSize - 2, rectSize - 2);
   };
 
   var clearRect = function(x, y) {
     var x = x * rectSize;
     var y = y * rectSize;
-    ctx.clearRect(x + 1, y + 1, rectSize - 2, rectSize - 2);
+    ctx.clearRect(y + 1, x + 1, rectSize - 2, rectSize - 2);
   };
 
   var nextStep = function() {
-    console.log('next step');
     LispJS.eval('(setq stanje (evolve stanje 0))');
   };
 
   var play = function() {
-    playing = true;
+    if (!playing) {
+      playing = true;
+      run();
+    }
   };
 
   var pause = function() {
@@ -58,7 +60,16 @@
   };
 
   var reset = function() {
-    window.href.location = '';
+    location.reload();
+  };
+
+  var run = function() {
+    if (playing) {
+      nextStep();
+      setTimeout(function() {
+        run();
+      }, speed);
+    }
   };
 
   var inputSpeedChange = function() {
@@ -73,8 +84,6 @@
     $btnNext.on('click', nextStep);
   };
 
-  drawBoard();
-
   LispJS.onOutput(function(output) {
     if (output) {
       var x = parseInt(output[0], 10);
@@ -88,20 +97,8 @@
     }
   });
 
-  LispJS.eval('(load-net (quote demo.lisp))');
-
-  window.nextStep = nextStep;
-
+  drawBoard();
   setListeners();
 
-  var run = function() {
-    console.log('run');
-    if (playing) {
-      nextStep();
-    }
-    setTimeout(function() {
-      run();
-    }, speed);
-  };
-  run();
+  LispJS.eval('(load-net (quote demo.lisp))');
 })();

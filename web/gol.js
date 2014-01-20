@@ -17,6 +17,8 @@
   var $inputSpeed = $('.input-speed');
   var $btnNext = $('.button-next');
 
+  $inputSpeed.val(localStorage.getItem('speed') || 100);
+
   var drawBoard = function() {
     for (var x = rectSize; x < canvasWidth; x += rectSize) {
       ctx.moveTo(x, 0);
@@ -74,6 +76,7 @@
 
   var inputSpeedChange = function() {
     speed = parseInt($inputSpeed.val(), 10);
+    localStorage.setItem('speed', speed);
   };
 
   var setListeners = function() {

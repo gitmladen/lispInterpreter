@@ -67,7 +67,6 @@
 		},
 		'list': function(args) {
 			ret = [];
-			console.log("list created:  " + args);
 			for (var i = 0; i < args.length; i++) {
 				ret.push(args[i]);
 			}
@@ -77,8 +76,6 @@
 			return args[1][parseInt(args[0])];
 		},
 		'print': function(args) {
-			console.log('printing: ');
-			console.log('printing ' + args);
 			output(args[0]);
 		},
 		'eq': function(args) {
@@ -90,8 +87,7 @@
 		},
 		'cons': function(args, scope) { //only in case the eval, evaluates args before passing to function
 			if (args.length != 2) {
-				console.log('Illegal number of arguments to CONS function ' + args.length);
-				return output('Illegal number of arguments to CONS function ' + args.length);
+				error('Illegal number of arguments to CONS function ' + args.length);
 			}
 
 			var res = [];
@@ -131,14 +127,9 @@
 			return res;
 		},
 		'load': function(args, scope) {
-			// console.log('loading file: ');
-			// console.log(args[0]);
 			//var fs = require('fs');
 			//var contents = fs.readFileSync(args[0]).toString();
-
 			//contents = contents.replace(/\n+/g, '');
-			//console.log(evaluateLine(data.toString()));
-
 		},
 		'load-net': function(args, scope) {
 			$.ajax({
@@ -207,11 +198,7 @@
 				var val = eval(bindings[i][1], scope);
 				innerScope[symbol] = val;
 			}
-			// console.log('calced closure ');
-			// console.log(innerScope);
-			// console.log('function ' + bodies);
-			// console.log('outer ');
-			// console.log(scope);
+
 			innerScope.__proto__ = scope;
 			var res = 0;
 			for (var i = 0; i < bodies.length; i++) {
@@ -247,9 +234,7 @@
 				struct.attributes[attr] = null;
 			});
 
-			console.log('defined: ' + name);
 			output('defined: ' + name);
-			console.log(struct);
 			output(struct);
 
 			var constructorName = 'make-' + name;
@@ -260,15 +245,12 @@
 						instance[definedAttr] = null;
 					}
 				}
-				console.log(instance);
 				for (var i = 0; i < consArgs.length; i += 2) {
-					console.log(consArgs[i] + '   ' + consArgs[i + 1]);
+					// console.log(consArgs[i] + '   ' + consArgs[i + 1]);
 					instance[consArgs[i]] = consArgs[i + 1];
 				}
 
-				console.log('constructed: ');
 				output('constructed: ');
-				console.log(instance);
 				output(instance);
 				return instance;
 			}
@@ -276,7 +258,6 @@
 			attributes.forEach(function(attr) {
 				var accessorName = name + '-' + attr;
 
-				console.log('creating accessor ' + accessorName);
 				output('creating accessor ' + accessorName);
 				var accessor = function(args) {
 					var instance = args[0];
@@ -339,9 +320,9 @@
 			}
 		}
 
-		console.log('Lexical stage: ');
-		console.log(ret);
-		console.log('======================================');
+		// console.log('Lexical stage: ');
+		// console.log(ret);
+		// console.log('======================================');
 		return ret;
 	};
 
@@ -382,9 +363,9 @@
 			}
 		}
 
-		console.log('Syntactical stage: ');
-		console.log(ret);
-		console.log('======================================');
+		// console.log('Syntactical stage: ');
+		// console.log(ret);
+		// console.log('======================================');
 		return ret;
 	};
 
@@ -483,7 +464,7 @@
 				output(err);
 			}
 			var data = data.toString().replace(/\n+/g, '');
-			console.log(evaluateLine(data.toString()));
+			evaluateLine(data.toString());
 		});
 
 		module.exports = exports;

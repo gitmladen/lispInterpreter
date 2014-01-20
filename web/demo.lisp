@@ -1,15 +1,25 @@
-(setq m 7)
+(setq m 17)
 (setq n 17)
 
 (defun seed () (
   list 
-(list 0 0 0 0 0 0 0 1 0 1 0 1 0 0 1 0 0)
-(list 0 0 0 0 0 0 0 1 1 0 1 1 0 1 0 1 1)
-(list 0 1 1 1 0 0 0 0 1 0 1 1 0 0 0 1 0)
-(list 0 0 0 0 0 0 0 0 1 0 1 0 1 0 1 0 1)
-(list 0 0 0 0 0 0 0 0 1 0 1 0 1 0 1 0 1)
-(list 0 0 0 0 0 0 0 0 1 1 0 1 0 1 0 1 0)
-(list 0 0 0 0 0 0 0 0 1 0 1 0 0 1 1 0 1)
+(list (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) )
+(list (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) )
+(list (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) )
+(list (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) )
+(list (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) )
+(list (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) )
+(list (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) )
+(list (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) )
+(list (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) )
+(list (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) )
+(list (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) )
+(list (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) )
+(list (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) )
+(list (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) )
+(list (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) )
+(list (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) )
+(list (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) (rand) )
 ))
 
 

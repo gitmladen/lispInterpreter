@@ -65,9 +65,11 @@
 
 ))
 
-(defun evolve-row (state ri ci)  (print (list ri ci (next-state (count-live state ri ci) (nth ci (nth ri state)))   ))
+(defun evolve-row (state ri ci)  (setq temp   (next-state (count-live state ri ci) (nth ci (nth ri state)))   )
+
+  (print (list ri ci temp ))
   (
-  if (> ci (- n 2)) (cons (next-state (count-live state ri ci) (nth ci (nth ri state))) nil)
+  if (> ci (- n 2)) (cons temp nil)
     (cons (next-state (count-live state ri ci) (nth ci (nth ri state)))  (evolve-row state ri (+ ci 1))
       ))
 )

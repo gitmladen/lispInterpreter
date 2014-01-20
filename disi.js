@@ -147,6 +147,9 @@
 			}).done(function(body) {
 				evaluateLine(body);
 			});
+		},
+		'rand': function(args, scope) {
+			return Math.round(Math.random());
 		}
 	};
 

@@ -2,7 +2,7 @@ var request = require('superagent');
 var expect = require('expect.js');
 var assert = require('assert');
 
-var interpreter = require('../disi.js');
+var interpreter = require('../jlisp.js');
 
 
 

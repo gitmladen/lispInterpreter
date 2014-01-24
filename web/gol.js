@@ -103,5 +103,9 @@
   drawBoard();
   setListeners();
 
-  LispJS.eval('(load-net (quote demo.lisp))');
+  $.ajax('/programs/demo.lisp', {
+    success: function(response) {
+      LispJS.eval(response);
+    }
+  });
 })();
